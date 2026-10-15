@@ -310,6 +310,20 @@
   },
   "dependency_check": "PASS",
   "static_analysis": "Ruff F rules passed",
+  "launcher_update_verification": {
+    "status": "PASS",
+    "unit_tests_total": 39,
+    "launcher_tests": 7,
+    "fresh_install_without_venv": "PASS",
+    "reuse_without_pip": "PASS",
+    "windows_batch_entry_point": "PASS",
+    "paths_with_spaces": "PASS",
+    "start_from_another_directory": "PASS",
+    "gradio_http_status": 200,
+    "test_servers_terminated": true,
+    "temporary_environment_removed": true,
+    "note": "Subsequent technical check of the downloader launchers, separate from the original GPU experiments."
+  },
   "repository_at_prepublication_verification": {
     "branch": "main",
     "commit_created": false,

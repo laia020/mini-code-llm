@@ -2,6 +2,8 @@
 
 Fine-tuning supervisionado do **HuggingFaceTB/SmolLM2-135M** para transformar instruções em inglês em pequenas funções Python. O projeto reúne dataset, contratos comportamentais, baseline, três experimentos, avaliação objetiva e interface Gradio.
 
+**Para executar no Windows:** com Python 3.11 instalado, baixe e extraia o projeto e dê dois cliques em **[iniciar.bat](iniciar.bat)**. Ele prepara o ambiente e abre o frontend automaticamente.
+
 **Origem dos experimentos:** todo o trabalho experimental original — baseline, treinamento dos três experimentos, validações e teste final — foi executado na instância Linux com **RTX 4090 de 24 GB e CUDA 13.0**. Esta pasta é uma cópia do projeto trazida da instância para organização, documentação e preparação da entrega. As verificações técnicas posteriores desta cópia local são registradas separadamente.
 
 **Resultado histórico:** 76/120 tarefas corretas no baseline de validation (**63,3%**); 120/120 no teste final do experimento 3 (**100%**). São conjuntos diferentes: a comparação direta entre configurações usa validation. O teste final confirma o desempenho nas famílias conhecidas e não mede programação geral.
@@ -164,9 +166,28 @@ Exact match compara o código extraído ao alvo canônico e é secundário: impl
 
 As restrições de AST, built-ins e subprocesso servem ao experimento controlado; **não são um sandbox geral** para código arbitrário. O frontend exibe a saída e não oferece execução de código.
 
-## Instalação
+## Como executar após baixar
 
-Use Python 3.11. Execute os comandos a partir da raiz do projeto.
+1. Instale **Python 3.11**, caso ainda não tenha.
+2. Baixe o repositório e extraia o ZIP, se necessário.
+3. No **Windows**, dê dois cliques em **[`iniciar.bat`](iniciar.bat)**.
+
+O inicializador cria a `.venv`, instala as dependências e abre o frontend no navegador. Não é preciso ativar o ambiente ou executar comandos de instalação. Mantenha a janela do inicializador aberta enquanto usa o aplicativo.
+
+Na primeira execução, a instalação pode demorar e requer internet. O modelo é baixado automaticamente no primeiro Generate. Nas próximas execuções, o ambiente e as dependências já preparados são reutilizados. Para encerrar, pressione **Ctrl+C** na janela do inicializador.
+
+No **Linux/macOS**, com Python 3.11 instalado, basta executar:
+
+```bash
+python3.11 iniciar.py
+```
+
+O instalador usa PyTorch CPU em novos ambientes Windows/Linux, suficiente para demonstrar o modelo. Uma instalação existente e compatível de PyTorch CUDA é preservada.
+
+<details>
+<summary>Instalação manual e uso de GPU (opcional)</summary>
+
+Execute os comandos a partir da raiz do projeto:
 
 ```powershell
 python -m venv .venv
@@ -184,13 +205,13 @@ python -c "import torch; print(torch.__version__); print(torch.cuda.is_available
 
 Há somente quatro dependências diretas: `torch`, `transformers`, `gradio` e `huggingface_hub`. Não é necessário Accelerate: o código usa um único dispositivo com `.to(device)`. Transformers está fixado em **5.19.0**, versão registrada nos artefatos publicados: a versão 4.57.6 falhou com o formato de `extra_special_tokens` do tokenizer. Gradio permanece na API 5; as versões efetivamente testadas constam no relatório. O primeiro uso baixa os pesos para o cache do Hugging Face fora do Git.
 
+</details>
+
 ## Frontend e inferência
 
-```powershell
-python src/app.py
-```
+O inicializador abre `http://127.0.0.1:7860` automaticamente. Escreva somente a instrução, clique em **Generate** e use **Clear** para limpar. Há seis prompts prontos em duas fileiras de três botões e uma explicação expansível das 12 famílias. O modelo é carregado na primeira geração e reutilizado. CUDA é escolhida quando disponível; caso contrário, CPU. Não é criado link público.
 
-Abra `http://127.0.0.1:7860`. Escreva somente a instrução, clique em **Generate** e use **Clear** para limpar. O modelo é carregado na primeira geração e reutilizado. CUDA é escolhida quando disponível; caso contrário, CPU. Não é criado link público.
+Com o ambiente já configurado, a execução direta `python src/app.py` também continua disponível. Para inferência individual pelo terminal:
 
 ```powershell
 python src/inference.py "Create a function that checks whether a number is even."
@@ -316,6 +337,8 @@ src/                        frontend, inferência, geração, treinamento e aval
 tests/                      testes unitários e regressões
 .gitignore                  exclusão de pesos, caches e segredos
 requirements.txt            dependências diretas
+iniciar.bat                 inicializador com dois cliques no Windows
+iniciar.py                  preparação automática e abertura do frontend
 ```
 
 ## Limitações e próximos passos

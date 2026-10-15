@@ -21,6 +21,7 @@ Data: 15/10/2026. Este relatório descreve a preparação local; a publicação 
 | Aplicação e pipeline | `src/__init__.py`, `src/common.py`, `src/inference.py`, `src/app.py`, `src/generate.py`, `src/training.py` |
 | Verificações | `scripts/audit_results.py`, `scripts/smoke_test.py`, `scripts/verify_repository.py`, `tests/test_pipeline.py` |
 | Ambiente e Git | `requirements.txt`, `.gitignore`, `.gitattributes` |
+| Inicialização simples | `iniciar.bat`, `iniciar.py` |
 | Documentação | `README.md`, `docs/presentation.md`, `docs/images/README.md`, `docs/original-artifacts.json`, este relatório e `docs/verification.json` |
 
 O ambiente `.venv/` e os resultados de verificações/reproduções ficam apenas localmente e são ignorados pelo Git. O resumo publicável das verificações está em `docs/verification.json`.
@@ -39,7 +40,7 @@ O ambiente `.venv/` e os resultados de verificações/reproduções ficam apenas
 | Verificação | Resultado |
 |---|---|
 | Compilação de `src`, `scripts` e `tests` | Aprovada |
-| Testes unitários e regressões | 32 testes aprovados, sem skips no ambiente virtual |
+| Testes unitários e regressões | 39 testes aprovados, incluindo sete verificações do inicializador, sem skips no ambiente virtual |
 | Validação do dataset | 960 registros, 960 instruções normalizadas únicas, hashes válidos e 53 casos contratuais |
 | Reconstrução em pasta separada | Dados, manifest e contratos idênticos aos originais |
 | Auditoria histórica | Cinco resumos e os detalhes de 600 respostas reproduzidos; nenhuma nova geração no test set |
@@ -51,6 +52,7 @@ O ambiente `.venv/` e os resultados de verificações/reproduções ficam apenas
 | Treinamento mínimo em CPU | Forward, backward, AdamW, salvamento e recarregamento aprovados |
 | CLI de geração e avaliação | 2/2 amostras de validation, 9/9 casos comportamentais |
 | CUDA local | Indisponível nesta instalação; testes de seleção simulados aprovados |
+| Inicializador automático | Instalação limpa sem `.venv` aprovada; segunda execução sem pip; `iniciar.bat` abriu HTTP 200 em uma pasta com espaços, a partir de outra pasta |
 
 As novas verificações não substituem os resultados acadêmicos. Os arquivos locais incluem `results/verification/audit-initial/`, `dataset.json`, `cli_evaluated.jsonl`, `cli_summary.json` e `runtime.json`. Novas execuções devem escolher caminhos ainda inexistentes.
 
@@ -62,16 +64,15 @@ A verificação técnica local do código de treinamento usou duas amostras de t
 
 ## Instalar e executar
 
-Na raiz, em PowerShell:
+Para quem baixar o repositório, basta ter **Python 3.11** instalado e dar dois cliques em **`iniciar.bat`** no Windows. O inicializador cria ou reutiliza a `.venv`, instala as dependências e abre o navegador. Nas próximas execuções, reutiliza as dependências enquanto o requirements e as versões instaladas permanecerem iguais.
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-python src/app.py
+No Linux/macOS:
+
+```bash
+python3.11 iniciar.py
 ```
 
-Acesse `http://127.0.0.1:7860`. Se a ativação estiver bloqueada, use `.\.venv\Scripts\python.exe src/app.py`.
+A interface abre em `http://127.0.0.1:7860`. A instalação inicial e o primeiro download do modelo precisam de internet. O inicializador instala PyTorch CPU em novos ambientes Windows/Linux e preserva uma instalação CUDA existente que satisfaça o requisito mínimo. Não instala Python nem drivers da GPU. As instruções manuais continuam em uma seção opcional do README.
 
 Inferência individual:
 
