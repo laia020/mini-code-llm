@@ -1,0 +1,9 @@
+* text=auto
+data/*.jsonl -text
+data/manifest.json -text
+contracts/*.json -text
+results/*.json -text
+results/*.jsonl -text
+results/experiment_3_train.log -text
+*.py text eol=lf
+*.md text eol=lf
