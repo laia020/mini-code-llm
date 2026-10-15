@@ -1,0 +1,327 @@
+{
+  "date": "2026-10-15",
+  "timezone": "America/Sao_Paulo",
+  "historical_training_environment": {
+    "source": "Confirmed by the project author; separate from the local verification runtime",
+    "platform": "Linux GPU instance accessed through VS Code over SSH",
+    "original_experimental_work": [
+      "baseline evaluation",
+      "training of all three experiments",
+      "validation evaluations",
+      "final test evaluation"
+    ],
+    "current_workspace_origin": "Project copied from the GPU instance for delivery preparation; subsequent local technical checks are separate from the original experiments",
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "vram_gb": 24,
+    "nvidia_smi_cuda_version": "13.0",
+    "torch_version": "2.13.0+cu130",
+    "torch_cuda_version": "13.0",
+    "cuda_available": true,
+    "preserved_log_evidence": "results/experiment_3_train.log: Device: cuda",
+    "original_screenshot_pending": true
+  },
+  "status": "PASS",
+  "unit_tests": {
+    "run": 32,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "compilation": "PASS",
+  "dataset": {
+    "status": "PASS",
+    "total_records": 960,
+    "unique_ids": 960,
+    "unique_normalized_instructions": 960,
+    "cross_split_instruction_duplicates": 0,
+    "contract_tests": 53
+  },
+  "preprocessing": {
+    "train": {
+      "examples": 720,
+      "min_tokens": 51,
+      "max_tokens": 87,
+      "all_have_supervised_eos": true
+    },
+    "validation": {
+      "examples": 120,
+      "min_tokens": 47,
+      "max_tokens": 83,
+      "all_have_supervised_eos": true
+    }
+  },
+  "dataset_rebuild": "Byte-identical data, manifest and contracts in a separate directory",
+  "immutable_artifacts": 21,
+  "historical_audit": {
+    "status": "PASS",
+    "immutable_artifacts": 21,
+    "results": [
+      {
+        "file": "baseline_validation_summary.json",
+        "status": "PASS",
+        "examples": 120,
+        "details_match": true
+      },
+      {
+        "file": "experiment_2_validation_summary.json",
+        "status": "PASS",
+        "examples": 120,
+        "details_match": true
+      },
+      {
+        "file": "experiment_3_validation_summary.json",
+        "status": "PASS",
+        "examples": 120,
+        "details_match": true
+      },
+      {
+        "file": "final_test_summary.json",
+        "status": "PASS",
+        "examples": 120,
+        "details_match": true
+      },
+      {
+        "file": "finetuned_validation_summary.json",
+        "status": "PASS",
+        "examples": 120,
+        "details_match": true
+      }
+    ],
+    "note": "Respostas salvas reavaliadas; nenhuma inferência nova no test set."
+  },
+  "runtime": {
+    "status": "PASS",
+    "platform": "Windows",
+    "python": "3.11.9",
+    "versions": {
+      "torch": "2.14.1",
+      "transformers": "5.19.0",
+      "gradio": "5.50.0",
+      "huggingface_hub": "1.33.0"
+    },
+    "model": "laia020/mini-code-llm",
+    "revision": "044a7de4030020a593eedb2417d11aecd38e5268",
+    "subfolder": "experiment-3",
+    "anonymous_hub_access": true,
+    "cpu_inference": "PASS",
+    "cuda_available": false,
+    "smoke_examples": [
+      {
+        "id": "smoke-add_numbers",
+        "family": "add_numbers",
+        "difficulty": 1,
+        "instruction": "Create a Python function called add_numbers(a, b) that returns their sum.",
+        "expected_code": "def add_numbers(a, b):\n    return a + b",
+        "generated": "def add_numbers(a, b):\n    return a + b",
+        "extracted_code": "def add_numbers(a, b):\n    return a + b",
+        "valid_python": true,
+        "correct_signature": true,
+        "safe_to_execute": true,
+        "exact_match": true,
+        "code_only_output": true,
+        "tests_passed": 4,
+        "tests_total": 4,
+        "task_passed": true,
+        "syntax_error": null,
+        "safety_error": null,
+        "test_details": [
+          "pass",
+          "pass",
+          "pass",
+          "pass"
+        ]
+      },
+      {
+        "id": "smoke-count_vowels",
+        "family": "count_vowels",
+        "difficulty": 2,
+        "instruction": "Create count_vowels(text) that counts vowels case-insensitively.",
+        "expected_code": "def count_vowels(text):\n    return sum(1 for char in text.lower() if char in \"aeiou\")",
+        "generated": "def count_vowels(text):\n    return sum(1 for char in text.lower() if char in \"aeiou\")",
+        "extracted_code": "def count_vowels(text):\n    return sum(1 for char in text.lower() if char in \"aeiou\")",
+        "valid_python": true,
+        "correct_signature": true,
+        "safe_to_execute": true,
+        "exact_match": true,
+        "code_only_output": true,
+        "tests_passed": 5,
+        "tests_total": 5,
+        "task_passed": true,
+        "syntax_error": null,
+        "safety_error": null,
+        "test_details": [
+          "pass",
+          "pass",
+          "pass",
+          "pass",
+          "pass"
+        ]
+      },
+      {
+        "id": "smoke-remove_duplicates",
+        "family": "remove_duplicates",
+        "difficulty": 3,
+        "instruction": "Create remove_duplicates(items) that removes duplicates while preserving order.",
+        "expected_code": "def remove_duplicates(items):\n    result = []\n\n    for item in items:\n        if item not in result:\n            result.append(item)\n\n    return result",
+        "generated": "def remove_duplicates(items):\n    result = []\n\n    for item in items:\n        if item not in result:\n            result.append(item)\n\n    return result",
+        "extracted_code": "def remove_duplicates(items):\n    result = []\n\n    for item in items:\n        if item not in result:\n            result.append(item)\n\n    return result",
+        "valid_python": true,
+        "correct_signature": true,
+        "safe_to_execute": true,
+        "exact_match": true,
+        "code_only_output": true,
+        "tests_passed": 5,
+        "tests_total": 5,
+        "task_passed": true,
+        "syntax_error": null,
+        "safety_error": null,
+        "test_details": [
+          "pass",
+          "pass",
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    ],
+    "smoke_summary": {
+      "input_file": "<memory>",
+      "examples": 3,
+      "valid_python": {
+        "count": 3,
+        "percent": 100.0
+      },
+      "correct_signature": {
+        "count": 3,
+        "percent": 100.0
+      },
+      "tasks_passed": {
+        "count": 3,
+        "percent": 100.0
+      },
+      "unit_tests": {
+        "passed": 14,
+        "total": 14,
+        "percent": 100.0
+      },
+      "exact_match": {
+        "count": 3,
+        "percent": 100.0
+      },
+      "code_only_output": {
+        "count": 3,
+        "percent": 100.0
+      },
+      "by_difficulty": {
+        "1": {
+          "examples": 1,
+          "tasks_passed": 1,
+          "tests_passed": 4,
+          "tests_total": 4,
+          "task_pass_percent": 100.0,
+          "unit_test_percent": 100.0
+        },
+        "2": {
+          "examples": 1,
+          "tasks_passed": 1,
+          "tests_passed": 5,
+          "tests_total": 5,
+          "task_pass_percent": 100.0,
+          "unit_test_percent": 100.0
+        },
+        "3": {
+          "examples": 1,
+          "tasks_passed": 1,
+          "tests_passed": 5,
+          "tests_total": 5,
+          "task_pass_percent": 100.0,
+          "unit_test_percent": 100.0
+        }
+      },
+      "by_family": {
+        "add_numbers": {
+          "examples": 1,
+          "tasks_passed": 1,
+          "tests_passed": 4,
+          "tests_total": 4,
+          "task_pass_percent": 100.0,
+          "unit_test_percent": 100.0
+        },
+        "count_vowels": {
+          "examples": 1,
+          "tasks_passed": 1,
+          "tests_passed": 5,
+          "tests_total": 5,
+          "task_pass_percent": 100.0,
+          "unit_test_percent": 100.0
+        },
+        "remove_duplicates": {
+          "examples": 1,
+          "tasks_passed": 1,
+          "tests_passed": 5,
+          "tests_total": 5,
+          "task_pass_percent": 100.0,
+          "unit_test_percent": 100.0
+        }
+      }
+    },
+    "cuda_inference": "NOT_AVAILABLE",
+    "gradio": {
+      "http": 200,
+      "generation": "PASS",
+      "clear": "PASS",
+      "empty_input_error": "PASS",
+      "shutdown": "PASS"
+    },
+    "training_smoke": {
+      "status": "PASS",
+      "optimizer_steps": 1,
+      "checkpoint_reload": "PASS",
+      "start_model": "Published experiment-3, for pipeline verification only",
+      "history": [
+        {
+          "epoch": 1,
+          "steps": 1,
+          "train_loss": 0.00010959169594570994,
+          "validation_loss": 7.220487896120176e-05
+        }
+      ],
+      "temporary_checkpoint_deleted": true
+    }
+  },
+  "batch_cli": {
+    "examples": 2,
+    "tasks_passed": 2,
+    "tests_passed": 9,
+    "tests_total": 9
+  },
+  "public_download": {
+    "anonymous": true,
+    "transport": "HTTPS with range requests; native Xet was stalled on this network",
+    "bytes": 269060552,
+    "sha256": "7927921a2101586f12f01f46df8f8130729cfa498c8ede3427d8306e1cc3aab9",
+    "verified": true,
+    "note": "Weights stored in user Hub cache outside repository; inference uses the pinned Hub revision."
+  },
+  "cli_observation": {
+    "instruction": "Create a function that checks whether a number is even.",
+    "output": "def isEven(number):\n    return number % 2 == 0",
+    "limitation": "Function name differs from canonical is_even when signature is not specified."
+  },
+  "dependency_check": "PASS",
+  "static_analysis": "Ruff F rules passed",
+  "repository_at_prepublication_verification": {
+    "branch": "main",
+    "commit_created": false,
+    "remote_added": true,
+    "origin": "https://github.com/laia020/mini-code-llm.git",
+    "push_performed": false
+  },
+  "pending_screenshots": [
+    "gpu-vscode.png",
+    "training.png",
+    "frontend.png"
+  ],
+  "screenshot_delivery": "Author will deliver the real screenshots to the professor in a separate document; repository copies are optional",
+  "note": "Verification only. Historical benchmark results were not modified or replaced; no new test-set generations."
+}
