@@ -350,19 +350,3 @@ iniciar.py                  preparação automática e abertura do frontend
 - Na verificação da CLI, a instrução genérica sobre paridade, sem assinatura, retornou `isEven(number)` em vez do identificador canônico `is_even(number)`. Informe a assinatura desejada; aderência ao nome não é garantida quando ele fica implícito.
 - Próximos passos: mais diversidade de implementações e linguagem, famílias inéditas em um benchmark separado, contratos ampliados e experimentos controlados com múltiplas seeds. O test set atual permanece congelado.
 
-## Publicação no GitHub
-
-Repositório pessoal: [laia020/mini-code-llm](https://github.com/laia020/mini-code-llm). O histórico organiza a entrega em commits de configuração, dados e resultados, pipeline e frontend, e documentação. O remoto `origin` está configurado neste checkout.
-
-Revise `git status` e os arquivos antes de publicar. Pesos, `.venv`, caches, credenciais e reproduções locais estão ignorados; dados, contratos, resultados históricos e documentação fazem parte da entrega.
-
-```powershell
-git status --short
-git add .
-git diff --cached --stat
-git commit -m "Atualiza projeto Mini Code LLM"
-git remote -v
-git push -u origin main
-```
-
-Para enviar atualizações, confira se `origin` aponta para `https://github.com/laia020/mini-code-llm.git` e autentique com a conta pessoal `laia020` quando solicitado. A identidade dos commits e a preferência de autenticação foram configuradas somente neste projeto.
