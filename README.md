@@ -4,7 +4,7 @@ LLM compacta especializada em gerar pequenas funções Python a partir de instru
 
 O benchmark cobre **12 famílias de tarefas**. Em validation, a correção funcional passou de **63,3% no modelo base para 100% nos experimentos 1 e 3**. O experimento 3 também acertou 120/120 tarefas no teste final. Esses resultados se limitam a novas formulações das famílias conhecidas.
 
-[Como usar](#como-usar) · [Modelos no Hugging Face](https://huggingface.co/laia020/mini-code-llm) · [Resultados](#resultados) · [Metodologia e reprodução](docs/reproduction.md)
+[Como usar](#como-usar) · [Modelos no Hugging Face](https://huggingface.co/laia020/mini-code-llm) · [Resultados](#resultados) · [Metodologia e reprodução](docs/reproduction.md) · [Contexto acadêmico](docs/academic-context.md)
 
 ## Como usar
 
