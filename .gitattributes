@@ -7,3 +7,4 @@ results/*.jsonl -text
 results/experiment_3_train.log -text
 *.py text eol=lf
 *.md text eol=lf
+*.bat text eol=crlf

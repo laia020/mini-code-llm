@@ -93,8 +93,9 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=7860)
+    parser.add_argument("--open-browser", action="store_true", help="Abre o frontend no navegador.")
     args = parser.parse_args(argv)
-    create_app().launch(server_name=args.host, server_port=args.port, share=False, inbrowser=False)
+    create_app().launch(server_name=args.host, server_port=args.port, share=False, inbrowser=args.open_browser)
 
 
 if __name__ == "__main__":
