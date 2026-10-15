@@ -1,0 +1,670 @@
+{
+  "dataset": "Mini Code LLM Dataset V1",
+  "version": "1.0.0",
+  "prompt_format": "### Task:\\n{instruction}\\n\\n### Code:\\n",
+  "families": [
+    {
+      "family": "add_numbers",
+      "difficulty": 1,
+      "signature": "add_numbers(a, b)",
+      "parameters": [
+        "a",
+        "b"
+      ],
+      "contract": "Accept two numbers and return their sum.",
+      "constraints": [
+        "The result must be returned, not printed."
+      ],
+      "code": "def add_numbers(a, b):\n    return a + b",
+      "tests": [
+        {
+          "args": [
+            2,
+            3
+          ],
+          "expected": 5
+        },
+        {
+          "args": [
+            -2,
+            5
+          ],
+          "expected": 3
+        },
+        {
+          "args": [
+            0,
+            0
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            1.5,
+            2.25
+          ],
+          "expected": 3.75
+        }
+      ]
+    },
+    {
+      "family": "is_even",
+      "difficulty": 1,
+      "signature": "is_even(number)",
+      "parameters": [
+        "number"
+      ],
+      "contract": "Accept an integer and return a Boolean indicating whether it is even.",
+      "constraints": [
+        "Zero and negative even integers count as even."
+      ],
+      "code": "def is_even(number):\n    return number % 2 == 0",
+      "tests": [
+        {
+          "args": [
+            2
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            7
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            0
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            -4
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            -3
+          ],
+          "expected": false
+        }
+      ]
+    },
+    {
+      "family": "get_largest",
+      "difficulty": 1,
+      "signature": "get_largest(a, b)",
+      "parameters": [
+        "a",
+        "b"
+      ],
+      "contract": "Accept two numbers and return the larger value; equal inputs return that value.",
+      "constraints": [
+        "Equal inputs must return their shared value."
+      ],
+      "code": "def get_largest(a, b):\n    return max(a, b)",
+      "tests": [
+        {
+          "args": [
+            2,
+            9
+          ],
+          "expected": 9
+        },
+        {
+          "args": [
+            -2,
+            -7
+          ],
+          "expected": -2
+        },
+        {
+          "args": [
+            4,
+            4
+          ],
+          "expected": 4
+        },
+        {
+          "args": [
+            3.5,
+            3.2
+          ],
+          "expected": 3.5
+        }
+      ]
+    },
+    {
+      "family": "reverse_string",
+      "difficulty": 1,
+      "signature": "reverse_string(text)",
+      "parameters": [
+        "text"
+      ],
+      "contract": "Accept a string and return all of its characters in reverse order.",
+      "constraints": [
+        "Preserve every character, including spaces and punctuation."
+      ],
+      "code": "def reverse_string(text):\n    return text[::-1]",
+      "tests": [
+        {
+          "args": [
+            "python"
+          ],
+          "expected": "nohtyp"
+        },
+        {
+          "args": [
+            ""
+          ],
+          "expected": ""
+        },
+        {
+          "args": [
+            "a"
+          ],
+          "expected": "a"
+        },
+        {
+          "args": [
+            "a b!"
+          ],
+          "expected": "!b a"
+        }
+      ]
+    },
+    {
+      "family": "calculate_average",
+      "difficulty": 2,
+      "signature": "calculate_average(numbers)",
+      "parameters": [
+        "numbers"
+      ],
+      "contract": "Accept a non-empty list of numbers and return its arithmetic mean.",
+      "constraints": [
+        "The input list is guaranteed to contain at least one number."
+      ],
+      "code": "def calculate_average(numbers):\n    return sum(numbers) / len(numbers)",
+      "tests": [
+        {
+          "args": [
+            [
+              2,
+              4,
+              6
+            ]
+          ],
+          "expected": 4.0
+        },
+        {
+          "args": [
+            [
+              5
+            ]
+          ],
+          "expected": 5.0
+        },
+        {
+          "args": [
+            [
+              -2,
+              2
+            ]
+          ],
+          "expected": 0.0
+        },
+        {
+          "args": [
+            [
+              1.5,
+              2.5,
+              5.0
+            ]
+          ],
+          "expected": 3.0
+        }
+      ]
+    },
+    {
+      "family": "count_vowels",
+      "difficulty": 2,
+      "signature": "count_vowels(text)",
+      "parameters": [
+        "text"
+      ],
+      "contract": "Count ASCII vowels a, e, i, o, and u case-insensitively.",
+      "constraints": [
+        "Accented characters are not vowels in V1."
+      ],
+      "code": "def count_vowels(text):\n    return sum(1 for char in text.lower() if char in \"aeiou\")",
+      "tests": [
+        {
+          "args": [
+            "Programming"
+          ],
+          "expected": 3
+        },
+        {
+          "args": [
+            "AEIOU"
+          ],
+          "expected": 5
+        },
+        {
+          "args": [
+            "rhythm"
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            ""
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            "café Á"
+          ],
+          "expected": 1
+        }
+      ]
+    },
+    {
+      "family": "get_min_max",
+      "difficulty": 2,
+      "signature": "get_min_max(numbers)",
+      "parameters": [
+        "numbers"
+      ],
+      "contract": "Accept a non-empty list and return a tuple containing minimum first and maximum second.",
+      "constraints": [
+        "The input is non-empty.",
+        "Return order is (minimum, maximum)."
+      ],
+      "code": "def get_min_max(numbers):\n    return min(numbers), max(numbers)",
+      "tests": [
+        {
+          "args": [
+            [
+              7,
+              2,
+              10,
+              4
+            ]
+          ],
+          "expected": [
+            2,
+            10
+          ],
+          "expected_type": "tuple"
+        },
+        {
+          "args": [
+            [
+              5
+            ]
+          ],
+          "expected": [
+            5,
+            5
+          ],
+          "expected_type": "tuple"
+        },
+        {
+          "args": [
+            [
+              -8,
+              -2,
+              -5
+            ]
+          ],
+          "expected": [
+            -8,
+            -2
+          ],
+          "expected_type": "tuple"
+        },
+        {
+          "args": [
+            [
+              1.5,
+              4.2,
+              0.5
+            ]
+          ],
+          "expected": [
+            0.5,
+            4.2
+          ],
+          "expected_type": "tuple"
+        }
+      ]
+    },
+    {
+      "family": "is_palindrome",
+      "difficulty": 2,
+      "signature": "is_palindrome(text)",
+      "parameters": [
+        "text"
+      ],
+      "contract": "Return True only when the string exactly equals its reversal.",
+      "constraints": [
+        "Comparison is case-sensitive.",
+        "Do not remove spaces or punctuation."
+      ],
+      "code": "def is_palindrome(text):\n    return text == text[::-1]",
+      "tests": [
+        {
+          "args": [
+            "radar"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "python"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            ""
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "Level"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "nurses run"
+          ],
+          "expected": false
+        }
+      ]
+    },
+    {
+      "family": "get_even_numbers",
+      "difficulty": 2,
+      "signature": "get_even_numbers(numbers)",
+      "parameters": [
+        "numbers"
+      ],
+      "contract": "Return a new list containing each even integer in its original order.",
+      "constraints": [
+        "Preserve order and repeated even values."
+      ],
+      "code": "def get_even_numbers(numbers):\n    return [number for number in numbers if number % 2 == 0]",
+      "tests": [
+        {
+          "args": [
+            [
+              1,
+              2,
+              3,
+              4
+            ]
+          ],
+          "expected": [
+            2,
+            4
+          ]
+        },
+        {
+          "args": [
+            [
+              2,
+              2,
+              -4,
+              5
+            ]
+          ],
+          "expected": [
+            2,
+            2,
+            -4
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              3,
+              5
+            ]
+          ],
+          "expected": []
+        },
+        {
+          "args": [
+            []
+          ],
+          "expected": []
+        },
+        {
+          "args": [
+            [
+              0,
+              -1
+            ]
+          ],
+          "expected": [
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "family": "count_occurrences",
+      "difficulty": 3,
+      "signature": "count_occurrences(items, target)",
+      "parameters": [
+        "items",
+        "target"
+      ],
+      "contract": "Accept a list and a target value, then return the number of equal list elements.",
+      "constraints": [
+        "Return zero when the target is absent."
+      ],
+      "code": "def count_occurrences(items, target):\n    return items.count(target)",
+      "tests": [
+        {
+          "args": [
+            [
+              1,
+              2,
+              2,
+              3,
+              2
+            ],
+            2
+          ],
+          "expected": 3
+        },
+        {
+          "args": [
+            [
+              "a",
+              "b",
+              "a"
+            ],
+            "a"
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            [],
+            1
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            [
+              true,
+              false,
+              true
+            ],
+            true
+          ],
+          "expected": 2
+        }
+      ]
+    },
+    {
+      "family": "remove_duplicates",
+      "difficulty": 3,
+      "signature": "remove_duplicates(items)",
+      "parameters": [
+        "items"
+      ],
+      "contract": "Keep the first occurrence of each value and preserve input order.",
+      "constraints": [
+        "Do not reorder the items.",
+        "Items may be unhashable, so a set is not required."
+      ],
+      "code": "def remove_duplicates(items):\n    result = []\n\n    for item in items:\n        if item not in result:\n            result.append(item)\n\n    return result",
+      "tests": [
+        {
+          "args": [
+            [
+              3,
+              1,
+              3,
+              2,
+              1
+            ]
+          ],
+          "expected": [
+            3,
+            1,
+            2
+          ]
+        },
+        {
+          "args": [
+            [
+              "a",
+              "a",
+              "b"
+            ]
+          ],
+          "expected": [
+            "a",
+            "b"
+          ]
+        },
+        {
+          "args": [
+            []
+          ],
+          "expected": []
+        },
+        {
+          "args": [
+            [
+              [
+                1
+              ],
+              [
+                1
+              ],
+              [
+                2
+              ]
+            ]
+          ],
+          "expected": [
+            [
+              1
+            ],
+            [
+              2
+            ]
+          ]
+        },
+        {
+          "args": [
+            [
+              0,
+              false,
+              1,
+              true
+            ]
+          ],
+          "expected": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "family": "word_frequency",
+      "difficulty": 3,
+      "signature": "word_frequency(words)",
+      "parameters": [
+        "words"
+      ],
+      "contract": "Count each exact, case-sensitive word and return a word-to-count dictionary.",
+      "constraints": [
+        "Matching is case-sensitive.",
+        "An empty list returns an empty dictionary."
+      ],
+      "code": "def word_frequency(words):\n    frequency = {}\n\n    for word in words:\n        frequency[word] = frequency.get(word, 0) + 1\n\n    return frequency",
+      "tests": [
+        {
+          "args": [
+            [
+              "python",
+              "java",
+              "python",
+              "csharp"
+            ]
+          ],
+          "expected": {
+            "python": 2,
+            "java": 1,
+            "csharp": 1
+          }
+        },
+        {
+          "args": [
+            []
+          ],
+          "expected": {}
+        },
+        {
+          "args": [
+            [
+              "a",
+              "A",
+              "a"
+            ]
+          ],
+          "expected": {
+            "a": 2,
+            "A": 1
+          }
+        },
+        {
+          "args": [
+            [
+              "one"
+            ]
+          ],
+          "expected": {
+            "one": 1
+          }
+        }
+      ]
+    }
+  ]
+}

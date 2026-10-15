@@ -1,0 +1,153 @@
+{
+  "input_file": "results/final_test.jsonl",
+  "examples": 120,
+  "valid_python": {
+    "count": 120,
+    "percent": 100.0
+  },
+  "correct_signature": {
+    "count": 120,
+    "percent": 100.0
+  },
+  "tasks_passed": {
+    "count": 120,
+    "percent": 100.0
+  },
+  "unit_tests": {
+    "passed": 530,
+    "total": 530,
+    "percent": 100.0
+  },
+  "exact_match": {
+    "count": 120,
+    "percent": 100.0
+  },
+  "code_only_output": {
+    "count": 120,
+    "percent": 100.0
+  },
+  "by_difficulty": {
+    "1": {
+      "examples": 40,
+      "tasks_passed": 40,
+      "tests_passed": 170,
+      "tests_total": 170,
+      "task_pass_percent": 100.0,
+      "unit_test_percent": 100.0
+    },
+    "2": {
+      "examples": 50,
+      "tasks_passed": 50,
+      "tests_passed": 230,
+      "tests_total": 230,
+      "task_pass_percent": 100.0,
+      "unit_test_percent": 100.0
+    },
+    "3": {
+      "examples": 30,
+      "tasks_passed": 30,
+      "tests_passed": 130,
+      "tests_total": 130,
+      "task_pass_percent": 100.0,
+      "unit_test_percent": 100.0
+    }
+  },
+  "by_family": {
+    "add_numbers": {
+      "examples": 10,
+      "tasks_passed": 10,
+      "tests_passed": 40,
+      "tests_total": 40,
+      "task_pass_percent": 100.0,
+      "unit_test_percent": 100.0
+    },
+    "calculate_average": {
+      "examples": 10,
+      "tasks_passed": 10,
+      "tests_passed": 40,
+      "tests_total": 40,
+      "task_pass_percent": 100.0,
+      "unit_test_percent": 100.0
+    },
+    "count_occurrences": {
+      "examples": 10,
+      "tasks_passed": 10,
+      "tests_passed": 40,
+      "tests_total": 40,
+      "task_pass_percent": 100.0,
+      "unit_test_percent": 100.0
+    },
+    "count_vowels": {
+      "examples": 10,
+      "tasks_passed": 10,
+      "tests_passed": 50,
+      "tests_total": 50,
+      "task_pass_percent": 100.0,
+      "unit_test_percent": 100.0
+    },
+    "get_even_numbers": {
+      "examples": 10,
+      "tasks_passed": 10,
+      "tests_passed": 50,
+      "tests_total": 50,
+      "task_pass_percent": 100.0,
+      "unit_test_percent": 100.0
+    },
+    "get_largest": {
+      "examples": 10,
+      "tasks_passed": 10,
+      "tests_passed": 40,
+      "tests_total": 40,
+      "task_pass_percent": 100.0,
+      "unit_test_percent": 100.0
+    },
+    "get_min_max": {
+      "examples": 10,
+      "tasks_passed": 10,
+      "tests_passed": 40,
+      "tests_total": 40,
+      "task_pass_percent": 100.0,
+      "unit_test_percent": 100.0
+    },
+    "is_even": {
+      "examples": 10,
+      "tasks_passed": 10,
+      "tests_passed": 50,
+      "tests_total": 50,
+      "task_pass_percent": 100.0,
+      "unit_test_percent": 100.0
+    },
+    "is_palindrome": {
+      "examples": 10,
+      "tasks_passed": 10,
+      "tests_passed": 50,
+      "tests_total": 50,
+      "task_pass_percent": 100.0,
+      "unit_test_percent": 100.0
+    },
+    "remove_duplicates": {
+      "examples": 10,
+      "tasks_passed": 10,
+      "tests_passed": 50,
+      "tests_total": 50,
+      "task_pass_percent": 100.0,
+      "unit_test_percent": 100.0
+    },
+    "reverse_string": {
+      "examples": 10,
+      "tasks_passed": 10,
+      "tests_passed": 40,
+      "tests_total": 40,
+      "task_pass_percent": 100.0,
+      "unit_test_percent": 100.0
+    },
+    "word_frequency": {
+      "examples": 10,
+      "tasks_passed": 10,
+      "tests_passed": 40,
+      "tests_total": 40,
+      "task_pass_percent": 100.0,
+      "unit_test_percent": 100.0
+    }
+  }
+}

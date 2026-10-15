@@ -1,0 +1,21 @@
+{
+  "dataset": "Mini Code LLM Dataset V1",
+  "version": "1.0.0",
+  "records": {
+    "train": 720,
+    "validation": 120,
+    "test": 120
+  },
+  "total_records": 960,
+  "per_family": {
+    "train": 60,
+    "validation": 10,
+    "test": 10
+  },
+  "sha256": {
+    "train.jsonl": "03501e60d4000d17683534b7dbf3556fbe6ada2709229d516f698b5a72938f9f",
+    "validation.jsonl": "9acddcc24cbc73075c26e98f5b6635f6a4d68bab30468ab193b725b5a92cd299",
+    "test.jsonl": "73ca2344958e6af9d8e7f19e11d26a6d01b77bf4e65c56f9a61afbe56850da14"
+  },
+  "contracts_sha256": "bbb2abfdd1c676f0951b4d854b5b42e71712c68bad7d724c702ab76eae9d1214"
+}

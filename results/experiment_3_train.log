@@ -1,0 +1,105 @@
+Device: cuda
+Training examples: 720
+Validation examples: 120
+Loading model...
+
+Starting training...
+Epoch 1/5 | Batch 25/360 | Loss: 0.0078
+Epoch 1/5 | Batch 50/360 | Loss: 0.0015
+Epoch 1/5 | Batch 75/360 | Loss: 0.0023
+Epoch 1/5 | Batch 100/360 | Loss: 0.0022
+Epoch 1/5 | Batch 125/360 | Loss: 0.0010
+Epoch 1/5 | Batch 150/360 | Loss: 0.0006
+Epoch 1/5 | Batch 175/360 | Loss: 0.0004
+Epoch 1/5 | Batch 200/360 | Loss: 0.0012
+Epoch 1/5 | Batch 225/360 | Loss: 0.0005
+Epoch 1/5 | Batch 250/360 | Loss: 0.0003
+Epoch 1/5 | Batch 275/360 | Loss: 0.0004
+Epoch 1/5 | Batch 300/360 | Loss: 0.0006
+Epoch 1/5 | Batch 325/360 | Loss: 0.0003
+Epoch 1/5 | Batch 350/360 | Loss: 0.0002
+
+Epoch 1 finished
+Train loss: 0.0113
+Validation loss: 0.0010
+New best model. Saving...
+Epoch 2/5 | Batch 25/360 | Loss: 0.0004
+Epoch 2/5 | Batch 50/360 | Loss: 0.0004
+Epoch 2/5 | Batch 75/360 | Loss: 0.0007
+Epoch 2/5 | Batch 100/360 | Loss: 0.0006
+Epoch 2/5 | Batch 125/360 | Loss: 0.0005
+Epoch 2/5 | Batch 150/360 | Loss: 0.0003
+Epoch 2/5 | Batch 175/360 | Loss: 0.0002
+Epoch 2/5 | Batch 200/360 | Loss: 0.0005
+Epoch 2/5 | Batch 225/360 | Loss: 0.0005
+Epoch 2/5 | Batch 250/360 | Loss: 0.0005
+Epoch 2/5 | Batch 275/360 | Loss: 0.0005
+Epoch 2/5 | Batch 300/360 | Loss: 0.0004
+Epoch 2/5 | Batch 325/360 | Loss: 0.0002
+Epoch 2/5 | Batch 350/360 | Loss: 0.0002
+
+Epoch 2 finished
+Train loss: 0.0004
+Validation loss: 0.0006
+New best model. Saving...
+Epoch 3/5 | Batch 25/360 | Loss: 0.0004
+Epoch 3/5 | Batch 50/360 | Loss: 0.0004
+Epoch 3/5 | Batch 75/360 | Loss: 0.0003
+Epoch 3/5 | Batch 100/360 | Loss: 0.0004
+Epoch 3/5 | Batch 125/360 | Loss: 0.0002
+Epoch 3/5 | Batch 150/360 | Loss: 0.0005
+Epoch 3/5 | Batch 175/360 | Loss: 0.0003
+Epoch 3/5 | Batch 200/360 | Loss: 0.0004
+Epoch 3/5 | Batch 225/360 | Loss: 0.0004
+Epoch 3/5 | Batch 250/360 | Loss: 0.0002
+Epoch 3/5 | Batch 275/360 | Loss: 0.0003
+Epoch 3/5 | Batch 300/360 | Loss: 0.0003
+Epoch 3/5 | Batch 325/360 | Loss: 0.0003
+Epoch 3/5 | Batch 350/360 | Loss: 0.0003
+
+Epoch 3 finished
+Train loss: 0.0003
+Validation loss: 0.0005
+New best model. Saving...
+Epoch 4/5 | Batch 25/360 | Loss: 0.0002
+Epoch 4/5 | Batch 50/360 | Loss: 0.0001
+Epoch 4/5 | Batch 75/360 | Loss: 0.0002
+Epoch 4/5 | Batch 100/360 | Loss: 0.0004
+Epoch 4/5 | Batch 125/360 | Loss: 0.0002
+Epoch 4/5 | Batch 150/360 | Loss: 0.0001
+Epoch 4/5 | Batch 175/360 | Loss: 0.0002
+Epoch 4/5 | Batch 200/360 | Loss: 0.0003
+Epoch 4/5 | Batch 225/360 | Loss: 0.0001
+Epoch 4/5 | Batch 250/360 | Loss: 0.0003
+Epoch 4/5 | Batch 275/360 | Loss: 0.0002
+Epoch 4/5 | Batch 300/360 | Loss: 0.0002
+Epoch 4/5 | Batch 325/360 | Loss: 0.0002
+Epoch 4/5 | Batch 350/360 | Loss: 0.0002
+
+Epoch 4 finished
+Train loss: 0.0002
+Validation loss: 0.0005
+New best model. Saving...
+Epoch 5/5 | Batch 25/360 | Loss: 0.0001
+Epoch 5/5 | Batch 50/360 | Loss: 0.0002
+Epoch 5/5 | Batch 75/360 | Loss: 0.0003
+Epoch 5/5 | Batch 100/360 | Loss: 0.0003
+Epoch 5/5 | Batch 125/360 | Loss: 0.0003
+Epoch 5/5 | Batch 150/360 | Loss: 0.0003
+Epoch 5/5 | Batch 175/360 | Loss: 0.0003
+Epoch 5/5 | Batch 200/360 | Loss: 0.0001
+Epoch 5/5 | Batch 225/360 | Loss: 0.0003
+Epoch 5/5 | Batch 250/360 | Loss: 0.0003
+Epoch 5/5 | Batch 275/360 | Loss: 0.0001
+Epoch 5/5 | Batch 300/360 | Loss: 0.0002
+Epoch 5/5 | Batch 325/360 | Loss: 0.0003
+Epoch 5/5 | Batch 350/360 | Loss: 0.0002
+
+Epoch 5 finished
+Train loss: 0.0002
+Validation loss: 0.0005
+New best model. Saving...
+
+Training finished.
+Best validation loss: 0.0005
+Best model saved to: models/experiment-3
