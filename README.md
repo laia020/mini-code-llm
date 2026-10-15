@@ -1,61 +1,65 @@
 # Mini Code LLM
 
-Fine-tuning supervisionado do **HuggingFaceTB/SmolLM2-135M** para transformar instruções em inglês em pequenas funções Python. O projeto reúne dataset, contratos comportamentais, baseline, três experimentos, avaliação objetiva e interface Gradio.
+LLM compacta especializada em gerar pequenas funções Python a partir de instruções em inglês. O projeto combina **full supervised fine-tuning do SmolLM2-135M**, avaliação por testes comportamentais e uma interface Gradio para experimentar o modelo localmente.
 
-**Para executar no Windows:** com Python 3.11 instalado, baixe e extraia o projeto e dê dois cliques em **[iniciar.bat](iniciar.bat)**. Ele prepara o ambiente e abre o frontend automaticamente.
+O benchmark cobre **12 famílias de tarefas**. Em validation, a correção funcional passou de **63,3% no modelo base para 100% nos experimentos 1 e 3**. O experimento 3 também acertou 120/120 tarefas no teste final. Esses resultados se limitam a novas formulações das famílias conhecidas.
 
-**Origem dos experimentos:** todo o trabalho experimental original — baseline, treinamento dos três experimentos, validações e teste final — foi executado na instância Linux com **RTX 4090 de 24 GB e CUDA 13.0**. Esta pasta é uma cópia do projeto trazida da instância para organização, documentação e preparação da entrega. As verificações técnicas posteriores desta cópia local são registradas separadamente.
+[Como usar](#como-usar) · [Modelos no Hugging Face](https://huggingface.co/laia020/mini-code-llm) · [Resultados](#resultados) · [Metodologia e reprodução](docs/reproduction.md)
 
-**Resultado histórico:** 76/120 tarefas corretas no baseline de validation (**63,3%**); 120/120 no teste final do experimento 3 (**100%**). São conjuntos diferentes: a comparação direta entre configurações usa validation. O teste final confirma o desempenho nas famílias conhecidas e não mede programação geral.
+## Como usar
 
-[Modelos publicados no Hugging Face](https://huggingface.co/laia020/mini-code-llm) · [Roteiro da apresentação](docs/presentation.md) · [Relatório da implementação](docs/implementation-report.md)
+### Windows
 
-## Objetivo acadêmico e evidências
+1. Tenha **Python 3.11** instalado.
+2. [Baixe o projeto](https://github.com/laia020/mini-code-llm/archive/refs/heads/main.zip) e extraia o ZIP.
+3. Dê dois cliques em **[`iniciar.bat`](iniciar.bat)**.
 
-Demonstrar que uma LLM compacta pré-treinada pode ser especializada por supervised fine-tuning (SFT), comparando parâmetros de treinamento e avaliando o comportamento do código gerado.
+O inicializador prepara a `.venv`, instala as dependências e abre o aplicativo em `http://127.0.0.1:7860`. Não é necessário ativar o ambiente ou instalar pacotes manualmente. Mantenha a janela aberta enquanto usa a aplicação; **Ctrl+C** encerra o servidor.
 
-| Requisito | Implementação ou evidência | Situação |
-|---|---|---|
-| 1. Escolher uma LLM | SmolLM2-135M, aproximadamente 135 milhões de parâmetros | Implementado |
-| 2. Escolher um problema | Geração de funções Python em 12 famílias | Implementado |
-| 3. Testar parâmetros | Três configurações de learning rate, batch e epochs | Resultados preservados |
-| 4. Avaliar respostas | AST, assinatura e testes de `contracts/families.json` | Implementado |
-| 5. Usar GPU | Treinamento em RTX 4090 24 GB com PyTorch `2.13.0+cu130` e CUDA 13.0, confirmado pelo autor; log registra `Device: cuda` | Realizado; evidência visual será entregue pelo autor em documento separado |
-| 6. Criar frontend | Gradio em `src/app.py` | Implementado; ver verificações no relatório |
-| 7. Print da GPU no VS Code | Screenshot original da instância, mostrando o VS Code e a GPU | Entrega em documento separado pelo autor |
-| 8. Código e documentação no GitHub | Repositório pessoal `laia020/mini-code-llm`, pesos no Hugging Face | Código, dados, resultados e documentação versionados neste repositório |
+### Linux/macOS
 
-O modelo **não foi treinado do zero**. Foi realizado **full supervised fine-tuning**: todos os pesos do modelo pré-treinado são ajustados. Não foram usados LoRA ou quantização no protocolo histórico.
+Com Python 3.11 instalado, execute na pasta do projeto:
 
-## Problema e exemplo
-
-O usuário escreve apenas:
-
-```text
-Create a function that checks whether a number is even.
+```bash
+python3.11 iniciar.py
 ```
 
-O sistema monta internamente o prompt, incluindo a quebra de linha final:
+A instalação inicial requer internet. O modelo é baixado do Hugging Face no primeiro **Generate** e fica em cache. Nas próximas execuções, o ambiente preparado é reutilizado. Se os requisitos ou as versões instaladas mudarem, o inicializador confere e ajusta as dependências dentro da `.venv`.
+
+Novos ambientes Windows/Linux usam PyTorch CPU, suficiente para a demonstração. Uma instalação PyTorch CUDA existente e compatível é preservada. A inferência seleciona CUDA quando disponível e CPU caso contrário.
+
+Problemas com Python, porta ocupada ou download? Consulte [solução de problemas](docs/reproduction.md#problemas-comuns-na-inicialização).
+
+## Exemplo de uso
+
+Na interface, escreva uma instrução em inglês ou clique em um dos **seis prompts prontos**. Depois, selecione **Generate**. O botão **Clear** limpa os campos, e a seção expansível explica as 12 famílias.
+
+Exemplo de instrução:
 
 ```text
-### Task:
-Create a function that checks whether a number is even.
-
-### Code:
+Create a Python function called add_numbers(a, b) that returns their sum.
 ```
 
-Uma resposta desejada é:
+Resposta esperada:
 
 ```python
-def is_even(number):
-    return number % 2 == 0
+def add_numbers(a, b):
+    return a + b
 ```
 
-O objetivo é melhorar a correção funcional, a aderência aos nomes e parâmetros e o encerramento da resposta, evitando explicações, conclusões e Markdown adicional. As instruções e os identificadores do dataset estão em inglês.
+Informe o nome e os parâmetros da função para obter uma assinatura consistente. A aplicação monta o prompt Task/Code internamente e exibe o código para revisão. O frontend não executa a função gerada.
 
-## Dataset e contratos
+## Modelo e abordagem
 
-O dataset sintético possui **960 registros**. Cada família contém 60 exemplos de train, 10 de validation e 10 de test.
+O modelo base é **`HuggingFaceTB/SmolLM2-135M`**, um Causal Language Model com aproximadamente 135 milhões de parâmetros. O tamanho compacto permite estudar o pipeline de especialização e executar a demonstração em CPU.
+
+Foi realizado **fine-tuning supervisionado**, ajustando todos os pesos do modelo pré-treinado. Não houve treinamento do zero, uso de LoRA ou quantização no protocolo documentado. A meta é melhorar a correção funcional, respeitar assinaturas e produzir somente o código solicitado.
+
+Os três checkpoints estão em [laia020/mini-code-llm](https://huggingface.co/laia020/mini-code-llm), nas subpastas `experiment-1`, `experiment-2` e **`experiment-3`**, escolhido para a aplicação. O carregamento é público e não exige login. Os pesos ficam no Hugging Face; este repositório contém código, dados, contratos e resultados.
+
+## Dataset
+
+São **960 exemplos sintéticos** em inglês, distribuídos em 12 famílias:
 
 | Dificuldade | Famílias e assinaturas |
 |---|---|
@@ -63,48 +67,30 @@ O dataset sintético possui **960 registros**. Cada família contém 60 exemplos
 | 2 | `calculate_average(numbers)`, `count_vowels(text)`, `get_min_max(numbers)`, `is_palindrome(text)`, `get_even_numbers(numbers)` |
 | 3 | `count_occurrences(items, target)`, `remove_duplicates(items)`, `word_frequency(words)` |
 
-| Divisão | Exemplos | Uso |
-|---|---:|---|
-| Train | 720 | Atualizar os pesos |
-| Validation | 120 | Acompanhar loss, comparar configurações e selecionar o modelo |
-| Test | 120 | Avaliação final após a seleção; conjunto congelado |
+| Divisão | Exemplos | Por família | Finalidade |
+|---|---:|---:|---|
+| Train | 720 | 60 | Atualizar os pesos |
+| Validation | 120 | 10 | Comparar configurações e selecionar o modelo |
+| Test | 120 | 10 | Avaliação final após a seleção |
 
-Cada JSONL contém `id`, `family`, `difficulty`, `instruction`, `prompt`, `code` e `text`. Os contratos definem assinatura, restrições, implementação canônica e casos comportamentais, incluindo entradas vazias e tipos de retorno quando exigidos. Existem **53 casos contratuais**, repetidos por família nos exemplos de cada split: **530 verificações** em validation e em test.
+As instruções normalizadas não se repetem entre divisões. Entretanto, famílias, assinaturas e implementações canônicas são compartilhadas: o benchmark tem **12 implementações alvo**, com variações na forma de pedir cada tarefa.
 
-As instruções normalizadas não se repetem entre divisões. Entretanto, as famílias, assinaturas e códigos canônicos são compartilhados: há apenas 12 implementações alvo. Isso limita as conclusões a reformulações de tarefas conhecidas. Os hashes em `data/manifest.json` e `docs/original-artifacts.json` permitem verificar integridade.
+Os [contratos](contracts/families.json) definem assinaturas, restrições e **53 casos comportamentais**. Aplicados aos dez exemplos de cada família, totalizam **530 verificações** em validation e em test. Os JSONL e seu [manifest de integridade](data/manifest.json) estão em `data/`.
 
-## Como funciona o fine-tuning
-
-O SmolLM2 é um **Causal Language Model**: usa os tokens anteriores para prever o próximo token. A tokenização converte texto em IDs; os **logits** são os escores do modelo para os próximos tokens. Na geração autoregressiva, cada token produzido entra no contexto do seguinte.
-
-No SFT, prompt e código são concatenados:
-
-```text
-input_ids: [tokens do prompt] [tokens do código] [EOS]
-labels:    [-100 ... -100]   [tokens do código] [EOS]
-```
-
-- **Labels e masking:** o valor `-100` faz a loss ignorar os tokens do prompt. O modelo continua vendo o prompt como contexto. O deslocamento causal de labels é feito internamente pelo modelo.
-- **EOS:** token supervisionado que ensina o término da resposta. Entradas longas são rejeitadas antes do treinamento para evitar removê-lo silenciosamente.
-- **Batch e padding:** o batch agrupa exemplos; sequências menores recebem padding. Os labels do padding são `-100` e a attention mask recebe zero nessas posições. Mesmo quando PAD usa o ID de EOS, o EOS real continua supervisionado.
-- **Loss:** entropia cruzada sobre os próximos tokens supervisionados. Menor loss indica melhor previsão desses tokens, mas não substitui testes funcionais. O protocolo calcula a média das losses dos batches de validation.
-- **AdamW:** atualiza os pesos usando estimativas adaptativas dos gradientes e weight decay desacoplado. O código usa weight decay padrão de 0,01 e gradient clipping com norma máxima 1,0.
-- **Learning rate:** tamanho dos ajustes dos pesos. **Epoch:** uma passagem pelo treino. Os experimentos completos usaram comprimento máximo de 256 tokens.
-
-O checkpoint de cada execução é salvo quando apresenta a menor validation loss. O test set não participa da seleção.
-
-## Resultados históricos
+## Resultados
 
 ### Comparação em validation
 
-| Configuração | LR | Batch | Epochs | Melhor val loss | Tarefas corretas |
-|---|---:|---:|---:|---:|---:|
-| Base | — | — | — | — | 76/120 (63,3%) |
-| Experimento 1 | 5e-5 | 2 | 5 | 0,0010¹ | 120/120 (100%) |
-| Experimento 2 | 1e-5 | 1 | 3 | 0,0901¹ | 82/120 (68,3%) |
-| **Experimento 3** | **1e-4** | **2** | **5** | **0,0005²** | **120/120 (100%)** |
+Todas as configurações abaixo foram avaliadas nos mesmos 120 exemplos de validation. LR significa learning rate; batch é a quantidade de exemplos processados por passo.
 
-¹ Loss e configuração informadas pelo autor; os logs de treinamento dos experimentos 1 e 2 não estão nesta cópia. As métricas funcionais possuem arquivos de resultados. ² Loss arredondada registrada em `results/experiment_3_train.log`; configuração presente no treinamento original. O log não permite recuperar maior precisão.
+| Configuração | LR | Batch | Epochs | Melhor val loss | Tasks passed |
+|---|---:|---:|---:|---:|---:|
+| [Base](results/baseline_validation_summary.json) | — | — | — | — | 76/120 (63,3%) |
+| [Experimento 1](results/finetuned_validation_summary.json) | 5e-5 | 2 | 5 | 0,0010¹ | 120/120 (100%) |
+| [Experimento 2](results/experiment_2_validation_summary.json) | 1e-5 | 1 | 3 | 0,0901¹ | 82/120 (68,3%) |
+| [**Experimento 3**](results/experiment_3_validation_summary.json) | **1e-4** | **2** | **5** | **0,0005²** | **120/120 (100%)** |
+
+¹ Losses e configurações registradas pelo responsável pelos experimentos; os logs dos treinamentos 1 e 2 não estão versionados. Suas métricas funcionais estão nos resultados vinculados. ² Loss arredondada registrada no [log do experimento 3](results/experiment_3_train.log).
 
 | Métrica | Base | Exp. 1 | Exp. 2 | Exp. 3 |
 |---|---:|---:|---:|---:|
@@ -121,30 +107,15 @@ O checkpoint de cada execução é salvo quando apresenta a menor validation los
 | 2 | 56,0% | 80,0% | 100% |
 | 3 | 36,7% | 6,7% | 100% |
 
-### Interpretação dos experimentos e escolha do modelo
+**O baseline já produzia sintaxe válida.** A diferença entre 98,3% de Python válido após extração e 63,3% de tarefas corretas evidencia falhas de lógica e aderência aos contratos. As famílias mais fracas foram `count_vowels` (0%), `get_min_max` (20%), `remove_duplicates` (0%) e `word_frequency` (10%). As respostas também incluíam explicações e conclusões adicionais, às vezes incompatíveis com o código.
 
-**Baseline.** A avaliação inicial estabeleceu quanto o modelo pré-treinado já resolvia antes da especialização. Em 98,3% das respostas, o código extraído era sintaticamente válido, mas apenas 63,3% das tarefas passavam em todos os testes. Portanto, a sintaxe não era a principal dificuldade: lógica, aderência ao contrato e formato também precisavam melhorar. Entre as famílias com menor desempenho estavam:
+**Aprender o formato não garantiu correção funcional.** O experimento 2 atingiu 99,2% de code-only, mas apenas 68,3% de tarefas corretas. Na dificuldade 3, ficou em 6,7%; `count_occurrences` atingiu 20%, enquanto `count_vowels`, `remove_duplicates` e `word_frequency` ficaram em 0%. Como LR, batch e epochs mudaram juntos em relação ao experimento 1, o estudo não isola o efeito de cada parâmetro.
 
-| Família | Tarefas corretas no baseline de validation |
-|---|---:|
-| `count_vowels` | 0/10 (0%) |
-| `get_min_max` | 2/10 (20%) |
-| `remove_duplicates` | 0/10 (0%) |
-| `word_frequency` | 1/10 (10%) |
-
-As respostas brutas preservadas em `results/baseline_validation.jsonl` incluem seções como `### Explanation` e `### Conclusion`, exemplos adicionais e explicações que nem sempre correspondem à implementação. Por exemplo, a primeira resposta implementa uma soma direta, mas a explicação descreve verificações de tipos inexistentes no código. Nenhuma das 120 respostas do baseline atendia à métrica code-only.
-
-**Experimento 1.** Com LR `5e-5`, batch 2 e cinco epochs, atingiu 120/120 tarefas, 530/530 verificações e 100% de code-only em validation. Isso demonstra melhora funcional e aderência ao formato nas tarefas avaliadas. A melhor validation loss de 0,0010 foi informada pelo autor; seu log não está nesta cópia.
-
-**Experimento 2.** Com LR `1e-5`, batch 1 e três epochs, atingiu 99,2% de code-only, mas apenas 68,3% de tarefas corretas. Na dificuldade 3, o acerto foi de 6,7%; `count_occurrences` atingiu 20%, enquanto `count_vowels`, `remove_duplicates` e `word_frequency` ficaram em 0%. O resultado mostra que seguir o formato e implementar o comportamento correto são dimensões diferentes: uma resposta pode conter somente Python válido e ainda falhar nos contratos. Como LR, batch e epochs mudaram juntos em relação ao experimento 1, não é possível atribuir o desempenho a apenas um fator. A configuração combinada não atingiu a especialização funcional observada nos outros dois experimentos.
-
-**Experimento 3.** Nos hiperparâmetros declarados, manteve batch 2, cinco epochs e comprimento máximo 256 do experimento 1, alterando o LR de `5e-5` para `1e-4`. Também atingiu 120/120 tarefas e 530/530 verificações, com exact match e code-only de 100%. Sua melhor validation loss registrada foi 0,0005, contra 0,0010 informada para o experimento 1. A comparação não inclui repetições com várias seeds, portanto não estabelece que aumentar o LR sempre melhora o resultado.
-
-**Escolha final.** O experimento 3 foi selecionado exclusivamente com validation, antes da avaliação final em test, segundo o protocolo informado pelo autor. Como os experimentos 1 e 3 empataram nas métricas funcionais, a menor validation loss foi o critério de desempate. O benchmark não demonstrou superioridade funcional do experimento 3 sobre o experimento 1; ambos acertaram todas as tarefas de validation.
+**O experimento 3 foi selecionado em validation.** Os experimentos 1 e 3 empataram nas métricas funcionais. A menor validation loss foi o critério de desempate, antes do uso do test set. A comparação não demonstrou superioridade funcional do experimento 3 sobre o experimento 1 nesse benchmark.
 
 ### Teste final
 
-Segundo o protocolo informado pelo autor, o experimento 3 foi avaliado uma única vez no conjunto final após a escolha.
+Depois da escolha do experimento 3, foi realizada uma única avaliação final nos 120 exemplos de test, conforme o protocolo documentado.
 
 | Métrica | Resultado |
 |---|---:|
@@ -154,199 +125,67 @@ Segundo o protocolo informado pelo autor, o experimento 3 foi avaliado uma únic
 | Unit tests | 530/530 (100%) |
 | Exact match | 120/120 (100%) |
 | Code-only output | 120/120 (100%) |
-| Dificuldades 1 / 2 / 3 | 40/40 · 50/50 · 30/30 |
 
-Todas as 12 famílias obtiveram 100%. As fontes são os arquivos `*_summary.json`, os JSONL detalhados e as gerações brutas de `results/`. `finetuned_validation*` corresponde ao experimento 1. A auditoria posterior reexecuta testes sobre respostas salvas; ela não realiza outra inferência no test set nem ajusta o modelo.
+As dificuldades 1, 2 e 3 atingiram, respectivamente, **40/40**, **50/50** e **30/30** tarefas corretas. Todas as 12 famílias atingiram 100%. Consulte o [resumo final](results/final_test_summary.json) e as [avaliações detalhadas](results/final_test_evaluated.jsonl).
 
-## Avaliação objetiva
+O baseline de 63,3% refere-se a **validation**; os 100% do teste final referem-se a **test**. A comparação direta entre configurações é a tabela de validation acima.
 
-A métrica principal é **Tasks passed**: uma tarefa só passa quando todos os seus casos comportamentais passam. O avaliador extrai o código, analisa AST e sintaxe, verifica nome e parâmetros, aplica restrições de execução e roda os contratos em subprocesso, com timeout padrão de cinco segundos por exemplo.
+## Como o código é avaliado
 
-Exact match compara o código extraído ao alvo canônico e é secundário: implementações textualmente diferentes podem ter o mesmo comportamento. Code-only compara a resposta bruta ao código extraído. A limpeza visual do frontend nunca é usada para melhorar as métricas.
+A métrica principal é **Tasks passed**: a função precisa passar em todos os casos comportamentais do seu contrato. O avaliador extrai o código, analisa sintaxe e AST, confere nome e parâmetros e executa os casos permitidos em subprocesso, com timeout padrão de cinco segundos por exemplo.
 
-As restrições de AST, built-ins e subprocesso servem ao experimento controlado; **não são um sandbox geral** para código arbitrário. O frontend exibe a saída e não oferece execução de código.
+**Exact match** compara o código extraído ao alvo canônico; é secundário, pois implementações diferentes podem ter o mesmo comportamento. **Code-only** compara a resposta bruta com o código extraído. A limpeza visual do frontend não é aplicada para melhorar as métricas.
 
-## Como executar após baixar
+As restrições de AST e built-ins servem à avaliação controlada deste benchmark e não constituem um sandbox geral para código arbitrário. As gerações brutas, avaliações e resumos ficam em `results/`; o prefixo `finetuned_validation` corresponde ao experimento 1.
 
-1. Instale **Python 3.11**, caso ainda não tenha.
-2. Baixe o repositório e extraia o ZIP, se necessário.
-3. No **Windows**, dê dois cliques em **[`iniciar.bat`](iniciar.bat)**.
+## Ambiente dos experimentos
 
-O inicializador cria a `.venv`, instala as dependências e abre o frontend no navegador. Não é preciso ativar o ambiente ou executar comandos de instalação. Mantenha a janela do inicializador aberta enquanto usa o aplicativo.
+Baseline, os três treinamentos, validações e teste final foram executados na instância Linux com **NVIDIA GeForce RTX 4090 de 24 GB**, acessada pelo VS Code via SSH.
 
-Na primeira execução, a instalação pode demorar e requer internet. O modelo é baixado automaticamente no primeiro Generate. Nas próximas execuções, o ambiente e as dependências já preparados são reutilizados. Para encerrar, pressione **Ctrl+C** na janela do inicializador.
-
-No **Linux/macOS**, com Python 3.11 instalado, basta executar:
-
-```bash
-python3.11 iniciar.py
-```
-
-O instalador usa PyTorch CPU em novos ambientes Windows/Linux, suficiente para demonstrar o modelo. Uma instalação existente e compatível de PyTorch CUDA é preservada.
-
-<details>
-<summary>Instalação manual e uso de GPU (opcional)</summary>
-
-Execute os comandos a partir da raiz do projeto:
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-```
-
-No Linux/macOS, ative com `source .venv/bin/activate`. Se a política do PowerShell impedir ativação, execute diretamente `.\.venv\Scripts\python.exe` no lugar de `python`.
-
-Para GPU, instale primeiro a distribuição CUDA do PyTorch compatível com o driver usando o comando do [seletor oficial do PyTorch](https://pytorch.org/get-started/locally/), depois os requirements. Confirme:
-
-```powershell
-python -c "import torch; print(torch.__version__); print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU')"
-```
-
-Há somente quatro dependências diretas: `torch`, `transformers`, `gradio` e `huggingface_hub`. Não é necessário Accelerate: o código usa um único dispositivo com `.to(device)`. Transformers está fixado em **5.19.0**, versão registrada nos artefatos publicados: a versão 4.57.6 falhou com o formato de `extra_special_tokens` do tokenizer. Gradio permanece na API 5; as versões efetivamente testadas constam no relatório. O primeiro uso baixa os pesos para o cache do Hugging Face fora do Git.
-
-</details>
-
-## Frontend e inferência
-
-O inicializador abre `http://127.0.0.1:7860` automaticamente. Escreva somente a instrução, clique em **Generate** e use **Clear** para limpar. Há seis prompts prontos em duas fileiras de três botões e uma explicação expansível das 12 famílias. O modelo é carregado na primeira geração e reutilizado. CUDA é escolhida quando disponível; caso contrário, CPU. Não é criado link público.
-
-Com o ambiente já configurado, a execução direta `python src/app.py` também continua disponível. Para inferência individual pelo terminal:
-
-```powershell
-python src/inference.py "Create a function that checks whether a number is even."
-python src/inference.py "Create count_vowels(text) that counts vowels case-insensitively." --device cpu
-```
-
-Inferência usa geração determinística (`do_sample=False`) com até 128 novos tokens. O prompt é removido por comprimento de tokens; a apresentação extrai a primeira função, sem modificar a resposta bruta usada no benchmark.
-
-## Modelos no Hugging Face
-
-O repositório contém `experiment-1`, `experiment-2` e **`experiment-3`**, o escolhido. Cada subpasta contém configuração, pesos e tokenizer. O projeto fixa a revisão verificada para evitar mudanças silenciosas; a CLI permite `--revision main` ou outro commit.
-
-```python
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
-repo_id = "laia020/mini-code-llm"
-options = {
-    "subfolder": "experiment-3",
-    "revision": "044a7de4030020a593eedb2417d11aecd38e5268",
-    "token": False,
-}
-tokenizer = AutoTokenizer.from_pretrained(repo_id, **options)
-model = AutoModelForCausalLM.from_pretrained(repo_id, **options)
-```
-
-O acesso público não exige login. Não coloque tokens no código. Para administrar sua própria conta, a autenticação da ferramenta Hub pode ser feita separadamente com `hf auth login` e verificada com `hf auth whoami`; ela não é necessária para este aplicativo. Os pesos não devem ser adicionados ao GitHub.
-
-Se o primeiro download ficar parado no transporte Xet da rede local, feche a tentativa e experimente o transporte HTTP padrão antes de iniciar novamente:
-
-```powershell
-$env:HF_HUB_DISABLE_XET = "1"
-python src/app.py
-```
-
-No Linux, use `HF_HUB_DISABLE_XET=1 python src/app.py`. Isso altera somente o transporte de download; mantém a origem pública e a revisão do modelo. O cache pode ser aquecido antes da apresentação. Em Windows sem suporte a symlinks, o Hub pode emitir um aviso e ocupar mais espaço, sem exigir execução como administrador.
-
-## Treinamento e reprodução
-
-Exemplo de **nova execução**, preferencialmente em GPU:
-
-```powershell
-python src/train.py --experiment experiment-3 --output-dir models/experiment-3-new --device cuda
-```
-
-Troque `--experiment` por `experiment-1` ou `experiment-2`. É possível fornecer `--learning-rate`, `--batch-size`, `--epochs`, `--seed`, `--max-length`, `--train-file` e `--validation-file`. Sem `--device cuda`, há seleção automática e fallback para CPU, que pode ser lento.
-
-As novas execuções registram configuração, seed padrão 42, versões, dispositivo, losses e melhor epoch em `training_metadata.json`. A seed 42 não é atribuída aos experimentos históricos. O autor confirmou PyTorch `2.13.0+cu130` e CUDA 13.0 no ambiente de treinamento; a seed e o ambiente histórico completo não estão registrados, portanto não se promete reprodução bit a bit.
-
-Gere respostas de validation e avalie em caminhos novos:
-
-```powershell
-python src/generate.py --model laia020/mini-code-llm --subfolder experiment-3 --input data/validation.jsonl --output results/reproductions/exp3_validation.jsonl
-python src/evaluate.py --input results/reproductions/exp3_validation.jsonl --output results/reproductions/exp3_evaluated.jsonl --summary results/reproductions/exp3_summary.json
-```
-
-Para baseline, use `--model HuggingFaceTB/SmolLM2-135M`, sem subfolder. Para um novo checkpoint local, use `--model models/experiment-3-new`. O gerador salva a resposta bruta e um arquivo separado de metadados.
-
-Os nomes antigos continuam como atalhos, por exemplo `python src/evaluate_experiment_3.py`; suas saídas agora ficam em `results/reproductions/`. Os comandos recusam arquivos/diretórios de saída já existentes. Escolha outro nome para repetir. `final_test.py` continua disponível para reprodução explícita, mas não faz parte dos testes rotineiros e não deve ser usado para selecionar hiperparâmetros.
-
-## Verificação
-
-```powershell
-python -m compileall -q src scripts tests
-python -m unittest discover -s tests -v
-python scripts/validate_dataset.py
-python scripts/audit_results.py --output-dir results/verification/audit-new
-python scripts/smoke_test.py --output results/verification/runtime-new.json
-python scripts/verify_repository.py
-```
-
-A auditoria usa as 600 gerações históricas salvas e compara resumos e detalhes. O smoke test online verifica três instruções independentes dos arquivos de test, inferência real em CPU, CUDA quando disponível, HTTP e callbacks do Gradio e um passo de treinamento em checkpoint temporário. Esse passo parte do experimento 3 publicado e só verifica o funcionamento do pipeline; não representa outro experimento acadêmico.
-
-Para reconstruir o dataset em uma pasta separada, sem tocar no benchmark congelado:
-
-```powershell
-python scripts/build_dataset.py --output-root results/reproductions/dataset-copy
-python scripts/validate_dataset.py --root results/reproductions/dataset-copy
-```
-
-Os scripts educacionais continuam disponíveis: `inspect_training_example.py`, `inspect_batch.py`, `inspect_loss.py` e `baseline_single.py`. Eles demonstram labels, padding, logits e previsão do próximo token; execute-os explicitamente a partir da raiz.
-
-## GPU e screenshots
-
-O baseline, os três treinamentos, as validações e o teste final foram realizados na instância Linux com **NVIDIA GeForce RTX 4090, 24 GB**, acessada pelo VS Code via SSH. O autor confirmou o seguinte ambiente experimental:
-
-| Informação | Valor informado |
+| Componente | Ambiente documentado |
 |---|---|
-| GPU | NVIDIA GeForce RTX 4090 |
-| VRAM | 24 GB |
-| `CUDA Version` exibida por `nvidia-smi` | `13.0` |
-| `torch.__version__` | `2.13.0+cu130` |
+| GPU | NVIDIA GeForce RTX 4090, 24 GB |
+| PyTorch | `2.13.0+cu130` |
 | `torch.version.cuda` | `13.0` |
+| CUDA exibida pelo `nvidia-smi` | `13.0` |
 | `torch.cuda.is_available()` | `True` |
 
-O log preservado também registra `Device: cuda`. Esses dados descrevem a instância de treinamento, conforme confirmado pelo autor. A finalização e os smoke tests posteriores foram executados em outra máquina, com PyTorch CPU; a indisponibilidade de CUDA nessa verificação local não se refere ao treinamento original.
+O [log de treinamento preservado](results/experiment_3_train.log) registra execução em CUDA. A demonstração local também foi verificada em CPU, incluindo inferência real e interface Gradio. Os registros dessas checagens estão em [docs/verification.json](docs/verification.json).
 
-O print original deve mostrar o VS Code e o resultado real de `nvidia-smi`, acompanhado idealmente das informações CUDA do PyTorch acima.
+## Metodologia e reprodução
 
-O autor entregará os screenshots ao professor em um **documento separado**. O print da GPU deve mostrar a janela do VS Code para atender ao requisito acadêmico. Cópias das imagens também podem ser incluídas opcionalmente em `docs/images/`; consulte [as instruções das imagens](docs/images/README.md). Não foram fabricadas imagens; a GPU histórica não deve ser confundida com o hardware da máquina usada para finalizar o projeto.
+O treinamento usa comprimento máximo 256, AdamW e gradient clipping de norma 1,0. Os tokens do prompt recebem labels `-100`, mantendo a instrução como contexto e concentrando a loss no código e no EOS. Padding também é mascarado. O checkpoint é selecionado pela menor validation loss.
 
-## Estrutura
+O [guia de metodologia e reprodução](docs/reproduction.md) detalha tokenização, logits, geração autoregressiva, labels, loss e batches, além dos comandos para treinamento, inferência, avaliação, auditoria e testes. As novas execuções registram seed, configuração, versões e hashes dos dados e recusam sobrescrever saídas existentes.
 
-```mermaid
-flowchart LR
-    D[Dataset e contratos] --> T[Fine-tuning: train e validation]
-    T --> H[Melhor checkpoint no Hugging Face]
-    H --> I[Inferência compartilhada]
-    I --> A[Frontend Gradio]
-    I --> G[Gerações brutas JSONL]
-    G --> E[AST, assinatura e testes]
-    E --> R[Resumos e resultados]
-```
-
-```text
-contracts/                  contratos e testes comportamentais
-data/                       splits congelados e manifest
-docs/                       apresentação, relatório, hashes e imagens
-results/                    resultados históricos preservados
-  reproductions/            novas execuções locais, ignoradas pelo Git
-  verification/             verificações locais, ignoradas pelo Git
-scripts/                    construção, validação, auditoria e smoke test
-src/                        frontend, inferência, geração, treinamento e avaliação
-tests/                      testes unitários e regressões
-.gitignore                  exclusão de pesos, caches e segredos
-requirements.txt            dependências diretas
-iniciar.bat                 inicializador com dois cliques no Windows
-iniciar.py                  preparação automática e abertura do frontend
-```
+Os hashes dos dados e dos resultados originais permitem verificar sua integridade. A auditoria reavalia respostas salvas, sem gerar novamente o test set. A suíte tem **39 testes unitários e de regressão**; o inicializador também foi verificado em uma cópia sem `.venv`, com caminho contendo espaços e inicialização HTTP real do Gradio.
 
 ## Limitações e próximos passos
 
-- Excelente especialização nas famílias conhecidas não implica resolver problemas Python novos. As formulações são sintéticas e compartilham alvos e assinaturas.
-- A avaliação cobre os casos contratuais existentes, não todos os comportamentos possíveis. Exact match de 100% é compatível com memorização das 12 implementações.
-- O estudo não isola o efeito de cada hiperparâmetro e não possui repetições com várias seeds ou estimativa de variabilidade.
-- Entradas em português, novas assinaturas e tarefas fora das famílias não foram validadas.
-- Na verificação da CLI, a instrução genérica sobre paridade, sem assinatura, retornou `isEven(number)` em vez do identificador canônico `is_even(number)`. Informe a assinatura desejada; aderência ao nome não é garantida quando ele fica implícito.
-- Próximos passos: mais diversidade de implementações e linguagem, famílias inéditas em um benchmark separado, contratos ampliados e experimentos controlados com múltiplas seeds. O test set atual permanece congelado.
+- Os 100% medem especialização em famílias conhecidas. As divisões compartilham assinaturas e códigos alvo, e o resultado é compatível com memorização das 12 implementações.
+- Os contratos verificam um conjunto finito de casos; não provam correção para todas as entradas possíveis.
+- O estudo não inclui repetições com múltiplas seeds nem uma estimativa de variabilidade. O ambiente original completo e a seed não estão integralmente registrados.
+- Instruções em português, novas assinaturas e algoritmos fora das famílias não foram validados.
+- Nomes implícitos podem gerar assinaturas diferentes: uma instrução genérica de paridade retornou `isEven(number)` em vez de `is_even(number)`. Informe a assinatura desejada no prompt.
 
+Próximos passos incluem diversificar instruções e implementações, ampliar os contratos e avaliar famílias inéditas em outro benchmark, mantendo o test set atual congelado.
+
+## Organização e documentação
+
+```text
+contracts/          contratos e casos comportamentais
+data/               train, validation, test e manifest de integridade
+results/            gerações e métricas dos experimentos
+src/                frontend, inferência, geração, treinamento e avaliação
+scripts/            construção, validação, auditoria e smoke tests
+tests/              testes do pipeline e do inicializador
+docs/               metodologia, evidências e contexto acadêmico
+iniciar.bat         inicializador Windows
+iniciar.py          preparação do ambiente e abertura do frontend
+requirements.txt    dependências diretas
+```
+
+- [Metodologia e reprodução](docs/reproduction.md)
+- [Resultados das verificações](docs/verification.json)
+- [Contexto acadêmico e evidências](docs/academic-context.md)
+- [Roteiro da apresentação](docs/presentation.md)

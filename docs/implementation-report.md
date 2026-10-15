@@ -22,7 +22,7 @@ Data: 15/10/2026. Este relatório descreve a preparação local; a publicação 
 | Verificações | `scripts/audit_results.py`, `scripts/smoke_test.py`, `scripts/verify_repository.py`, `tests/test_pipeline.py` |
 | Ambiente e Git | `requirements.txt`, `.gitignore`, `.gitattributes` |
 | Inicialização simples | `iniciar.bat`, `iniciar.py` |
-| Documentação | `README.md`, `docs/presentation.md`, `docs/images/README.md`, `docs/original-artifacts.json`, este relatório e `docs/verification.json` |
+| Documentação | `README.md`, `docs/reproduction.md`, `docs/academic-context.md`, `docs/presentation.md`, `docs/images/README.md`, `docs/original-artifacts.json`, este relatório e `docs/verification.json` |
 
 O ambiente `.venv/` e os resultados de verificações/reproduções ficam apenas localmente e são ignorados pelo Git. O resumo publicável das verificações está em `docs/verification.json`.
 
@@ -93,7 +93,7 @@ python src/generate.py --model laia020/mini-code-llm --subfolder experiment-3 --
 python src/evaluate.py --input results/reproductions/validation-new.jsonl --output results/reproductions/validation-new-evaluated.jsonl --summary results/reproductions/validation-new-summary.json
 ```
 
-O [README](../README.md) contém os comandos completos, a instalação CUDA, o exemplo de `AutoTokenizer`/`AutoModelForCausalLM.from_pretrained` com subfolder e revisão e a explicação dos scripts educacionais. A estrutura final também está documentada nele.
+O [README](../README.md) apresenta o projeto, o inicializador, os resultados e suas limitações para o público do repositório. Os comandos avançados, instalação CUDA, carregamento com `AutoTokenizer`/`AutoModelForCausalLM.from_pretrained` e scripts educacionais estão no [guia de metodologia e reprodução](reproduction.md). O checklist da atividade está em [contexto acadêmico](academic-context.md).
 
 ## Compatibilidade e limites de reprodução
 
