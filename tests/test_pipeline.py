@@ -142,7 +142,7 @@ class EvaluationTests(unittest.TestCase):
 class InferenceTests(unittest.TestCase):
     def test_auto_device(self):
         self.assertEqual(select_device("auto", True), "cuda")
-        self.assertEqual(select_device("auto", False), "cpu")
+        self.assertEqual(select_device("auto", False, False), "cpu")
         self.assertEqual(select_device("cpu", True), "cpu")
 
     def test_unavailable_cuda(self):

@@ -1,4 +1,4 @@
-"""CPU/CUDA inference shared by the command line, batch generator and Gradio."""
+"""CPU/CUDA/MPS inference shared by the command line, batch generator and Gradio."""
 
 import argparse
 import sys
@@ -10,15 +10,42 @@ else:
     from common import MODEL_ID, MODEL_REVISION, build_prompt
 
 
-def select_device(requested="auto", cuda_available=None):
-    if requested not in {"auto", "cpu", "cuda"}:
-        raise ValueError("Dispositivo deve ser auto, cpu ou cuda.")
+DEVICE_CHOICES = ("auto", "cuda", "mps", "cpu")
+
+
+def select_device(requested="auto", cuda_available=None, mps_available=None):
+    """Resolve a device; explicit unavailable accelerators fail without silent fallback.
+
+    Availability overrides allow hardware-independent tests.
+    """
+    if requested not in DEVICE_CHOICES:
+        raise ValueError("Dispositivo deve ser auto, cuda, mps ou cpu.")
+    if requested == "cpu":
+        return "cpu"
     if cuda_available is None:
         import torch
         cuda_available = torch.cuda.is_available()
-    if requested == "cuda" and not cuda_available:
-        raise RuntimeError("CUDA solicitada, mas indisponível neste ambiente.")
-    return ("cuda" if cuda_available else "cpu") if requested == "auto" else requested
+    if requested == "cuda":
+        if not cuda_available:
+            raise RuntimeError("CUDA solicitada, mas indisponível neste ambiente.")
+        return "cuda"
+    if requested == "auto" and cuda_available:
+        return "cuda"
+    if mps_available is None:
+        import torch
+        backend = getattr(torch.backends, "mps", None)
+        mps_available = backend is not None and backend.is_available()
+    if requested == "mps" and not mps_available:
+        raise RuntimeError("MPS solicitado, mas indisponível. Verifique o PyTorch e o suporte Metal do macOS ou use --device cpu.")
+    return "mps" if mps_available else "cpu"
+
+
+def model_load_options(device):
+    """Use portable FP32 on Metal, avoiding checkpoint/default dtype surprises."""
+    if device == "mps":
+        import torch
+        return {"dtype": torch.float32}
+    return {}
 
 
 def clean_output(text):
@@ -67,7 +94,7 @@ class CodeGenerator:
             raise ValueError("O tokenizer precisa definir EOS.")
         if tokenizer.pad_token_id is None:
             tokenizer.pad_token = tokenizer.eos_token
-        model = AutoModelForCausalLM.from_pretrained(self.model_id, **kwargs)
+        model = AutoModelForCausalLM.from_pretrained(self.model_id, **kwargs, **model_load_options(self.device))
         model.to(self.device)
         model.eval()
         self.tokenizer, self.model = tokenizer, model
@@ -102,7 +129,7 @@ def add_model_arguments(parser):
     parser.add_argument("--model", default=MODEL_ID)
     parser.add_argument("--subfolder", default=None)
     parser.add_argument("--revision", default=None)
-    parser.add_argument("--device", choices=["auto", "cpu", "cuda"], default="auto")
+    parser.add_argument("--device", choices=DEVICE_CHOICES, default="auto")
     parser.add_argument("--max-new-tokens", type=int, default=128)
 
 

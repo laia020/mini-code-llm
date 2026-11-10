@@ -4,7 +4,7 @@ Este guia reúne os detalhes do fine-tuning, os comandos de experimentação e a
 
 ## Ambiente para os comandos
 
-Use Python 3.11 e execute os comandos a partir da raiz do projeto, com o ambiente virtual ativo. O inicializador `iniciar.bat` ou `python3.11 iniciar.py` prepara a `.venv` automaticamente.
+Use Python 3.11 ou superior e execute os comandos a partir da raiz do projeto, com o ambiente virtual ativo. Para instalação com uv e o prompt `(venv-mini-code-llm)`, siga o [README](../README.md#instalação-manual-com-uv--windows-linux-e-macos); se a `.venv` já existe, não a recrie. O inicializador `iniciar.bat` ou `python3 iniciar.py` prepara a `.venv` automaticamente.
 
 <details>
 <summary>Instalação e ativação manual</summary>
@@ -72,7 +72,7 @@ Todos os pesos do modelo pré-treinado são ajustados. Não foram usados LoRA ou
 python src/train.py --experiment experiment-3 --output-dir models/experiment-3-new --device cuda
 ```
 
-Os presets são `experiment-1`, `experiment-2` e `experiment-3`. A CLI também aceita `--learning-rate`, `--batch-size`, `--epochs`, `--seed`, `--max-length`, `--train-file` e `--validation-file`. Com `--device auto`, seleciona CUDA quando disponível e CPU caso contrário; treinamento completo em CPU pode ser lento.
+Os presets são `experiment-1`, `experiment-2` e `experiment-3`. A CLI também aceita `--learning-rate`, `--batch-size`, `--epochs`, `--seed`, `--max-length`, `--train-file` e `--validation-file`. Com `--device auto`, seleciona CUDA → MPS → CPU; treinamento completo em CPU pode ser lento.
 
 Cada nova execução registra configuração, seed padrão 42, versões, dispositivo, hashes dos dados, losses e melhor epoch em `training_metadata.json`. A seed 42 não é atribuída aos experimentos originais. O ambiente original completo e sua seed não estão integralmente registrados, portanto não se promete reprodução bit a bit.
 
@@ -112,7 +112,8 @@ Checks locais:
 
 ```powershell
 python -m compileall -q iniciar.py src scripts tests
-python -m unittest discover -s tests -v
+python -m pytest tests/ -v
+# Alternativa sem pytest: python -m unittest discover -s tests -v
 python scripts/validate_dataset.py
 python scripts/verify_repository.py
 ```
@@ -129,7 +130,7 @@ Verificação online opcional do pipeline:
 python scripts/smoke_test.py --output results/verification/runtime-new.json
 ```
 
-O smoke test verifica três instruções independentes dos arquivos de test, inferência em CPU, CUDA quando disponível e os callbacks do Gradio. Também executa um passo de otimização em checkpoint temporário, partindo do experimento 3 publicado, para verificar o código de treinamento. O checkpoint é descartado; essa checagem não representa outro experimento acadêmico.
+O smoke test verifica três instruções independentes dos arquivos de test, inferência no dispositivo selecionado (`--device auto` por padrão), CUDA adicional quando disponível e os callbacks do Gradio. Também executa um passo de otimização em checkpoint temporário, partindo do experimento 3 publicado, para verificar o código de treinamento. O checkpoint é descartado; essa checagem não representa outro experimento acadêmico.
 
 Para reconstruir o dataset sem substituir o benchmark congelado:
 
@@ -142,7 +143,7 @@ Os scripts educacionais `inspect_training_example.py`, `inspect_batch.py`, `insp
 
 ## Problemas comuns na inicialização
 
-- **Python incompatível:** o inicializador requer Python 3.11. Uma `.venv` existente e incompatível é preservada, com uma mensagem de erro.
+- **Python incompatível:** o inicializador requer Python 3.11 ou superior. Uma `.venv` existente e incompatível é preservada, com uma mensagem de erro.
 - **Porta ocupada:** encerre outra instância do frontend ou use `python iniciar.py --port 7861`.
 - **Instalação interrompida:** confira a conexão e execute o inicializador novamente. Somente instalações concluídas são marcadas como prontas.
 - **Download do modelo parado:** tente o transporte HTTP padrão no lugar do Xet, conforme abaixo.
@@ -161,3 +162,64 @@ HF_HUB_DISABLE_XET=1 python3.11 iniciar.py
 ```
 
 No Windows sem suporte a symlinks, o Hub pode emitir um aviso e usar mais espaço de cache. Não é necessário executar como administrador apenas por esse aviso.
+
+
+## Apple Silicon (MPS)
+
+Para um Mac com `.venv` já configurada com uv, preserve o ambiente e execute na raiz:
+
+```bash
+source .venv/bin/activate
+uv pip check
+python -c "import torch; print(torch.__version__); print(torch.backends.mps.is_available())"
+python iniciar.py --skip-setup --device mps
+```
+
+Não é necessário reinstalar PyTorch ou criar outra `.venv`. O modo `--skip-setup` verifica o Python existente e inicia a interface sem instalar pacotes. `--no-browser` evita abrir o navegador. A inicialização normal continua preparando dependências quando necessário, inclusive no Windows/Linux.
+
+Inferência e diagnóstico (os comandos que carregam modelos podem baixar pesos se ainda não estiverem em cache):
+
+```bash
+python src/inference.py "Create is_even(number) that checks parity." --device mps
+python src/baseline_single.py --device mps
+python src/inspect_loss.py --device mps
+python src/generate.py --input data/validation.jsonl --output results/reproductions/mac-validation-new.jsonl --device mps
+```
+
+Nas CLIs de inferência, geração e treinamento, use `--model /caminho/do/checkpoint` para carregar pesos locais. Os scripts didáticos `baseline_single.py` e `inspect_loss.py` têm modelo fixo e não oferecem `--model`. Para proibir acesso à rede, defina `HF_HUB_OFFLINE=1`. A avaliação das respostas permanece em CPU, com os mesmos contratos e métricas:
+
+```bash
+python src/evaluate.py --input results/reproductions/mac-validation-new.jsonl --output results/reproductions/mac-evaluated-new.jsonl --summary results/reproductions/mac-summary-new.json
+```
+
+Exemplo de treinamento limitado a um passo, **opcional**, usando um modelo local e novos caminhos de saída:
+
+```bash
+python src/train.py --model /caminho/do/checkpoint --output-dir models/mac-smoke-new --device mps --batch-size 1 --epochs 1 --max-steps 1
+```
+
+Esse comando ainda valida todo o arquivo de validation. O treinamento completo é solicitado removendo `--max-steps`; não foi executado durante a adaptação. Os presets, o mascaramento dos prompts, o clipping e o critério de melhor checkpoint permanecem iguais. Os checkpoints continuam no formato `save_pretrained`/safetensors, recarregáveis em CPU, CUDA ou MPS.
+
+Testes pequenos, totalmente locais, sem baixar modelos:
+
+```bash
+HF_HUB_OFFLINE=1 python -m unittest discover -s tests -v
+```
+
+A suíte cria um Llama minúsculo com pesos aleatórios e tokenizer local em diretório temporário, executa um passo de AdamW, valida, salva, recarrega e gera em CPU e em MPS quando disponível. O teste MPS é pulado se o processo não tiver acesso à GPU (por exemplo, dentro de um sandbox). Essa validação com modelo minúsculo não comprova a execução do SmolLM2-135M ou dos checkpoints publicados em MPS; essa verificação permanece pendente, assim como o fine-tuning completo no MacBook. Nesta revisão, Windows/Linux e CUDA foram verificados por inspeção e testes com simulação, sem nova execução nativa nessas plataformas.
+
+O smoke test online existente também aceita `--device auto|cuda|mps|cpu`:
+
+```bash
+python scripts/smoke_test.py --device mps --output /tmp/mini-code-mps-smoke-new.json
+```
+
+Ele usa o modelo publicado, acessa o Hub e testa Gradio e um passo de treinamento; `--skip-training` omite esse passo. Não faz parte dos testes offline e pode baixar pesos. Não foi executado durante esta adaptação.
+
+MPS usa FP32 explicitamente para evitar tipos incompatíveis vindos do checkpoint ou do dtype padrão. IDs, máscaras e labels continuam `torch.long`. Não há AMP, FP16/BF16 ou kernels CUDA impostos no caminho MPS. FP64 não é suportado; a cobertura e o desempenho das operações dependem do PyTorch e do macOS. Consulte a [documentação oficial do backend MPS](https://docs.pytorch.org/docs/stable/notes/mps.html) e o [guia Apple Silicon do Transformers](https://huggingface.co/docs/transformers/en/apple_silicon).
+
+Se uma operação não tiver implementação MPS, tente `PYTORCH_ENABLE_MPS_FALLBACK=1` antes de iniciar o Python, ou escolha `--device cpu`. O fallback pode reduzir o desempenho e não resolve tipos incompatíveis como FP64. Ele não é habilitado automaticamente. A escolha explícita de uma GPU indisponível gera erro; apenas `auto` procura o próximo backend disponível.
+
+A GPU compartilha memória com o sistema. Se faltar memória, reduza o batch; mudar o comprimento máximo exige garantir que os exemplos ainda caibam, pois o projeto rejeita exemplos longos em vez de truncá-los. Não há garantia de igualdade numérica ou desempenho superior à CPU para cargas pequenas; os resultados históricos não são reescritos nem considerados reproduzidos pela execução em outro backend.
+
+A auditoria normaliza caminhos Windows guardados nos resumos históricos apenas ao localizar os arquivos; os JSONs originais e seus hashes são preservados.

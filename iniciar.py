@@ -28,8 +28,8 @@ def ensure_environment(root):
     version = subprocess.check_output(
         [str(python), "-c", "import sys; print('%s.%s' % sys.version_info[:2])"], text=True,
     ).strip()
-    if version != "3.11":
-        raise RuntimeError("A .venv existente não usa Python 3.11. Use uma cópia limpa do projeto com Python 3.11.")
+    if tuple(map(int, version.split("."))) < (3, 11):
+        raise RuntimeError("A .venv existente requer Python 3.11 ou superior; seus arquivos foram preservados.")
     return python
 
 
@@ -88,21 +88,24 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--prepare-only", action="store_true", help="Prepara o ambiente sem iniciar o frontend.")
     parser.add_argument("--no-browser", action="store_true", help="Inicia sem abrir o navegador automaticamente.")
+    parser.add_argument("--device", choices=("auto", "cuda", "mps", "cpu"), default="auto")
+    parser.add_argument("--skip-setup", action="store_true", help="Reutiliza a .venv sem instalar ou alterar dependências (por exemplo, gerenciadas com uv).")
     parser.add_argument("--port", type=int, default=7860)
     args = parser.parse_args(argv)
     try:
-        if sys.version_info[:2] != (3, 11):
-            raise RuntimeError("Instale Python 3.11 para executar este inicializador. https://www.python.org/downloads/")
+        if sys.version_info[:2] < (3, 11):
+            raise RuntimeError("Instale Python 3.11 ou superior para executar este inicializador. https://www.python.org/downloads/")
         if not 1 <= args.port <= 65535:
             raise ValueError("A porta deve estar entre 1 e 65535.")
         python = ensure_environment(ROOT)
-        ensure_dependencies(ROOT, python)
+        if not args.skip_setup:
+            ensure_dependencies(ROOT, python)
         if args.prepare_only:
             print("Instalação concluída. Execute iniciar.bat ou python iniciar.py para abrir o aplicativo.", flush=True)
             return 0
         print(f"Abrindo Mini Code LLM em http://127.0.0.1:{args.port}", flush=True)
         print("Mantenha esta janela aberta enquanto usa o aplicativo. Ctrl+C encerra o servidor.", flush=True)
-        command = [str(python), str(ROOT / "src/app.py"), "--port", str(args.port)]
+        command = [str(python), str(ROOT / "src/app.py"), "--device", args.device, "--port", str(args.port)]
         if not args.no_browser:
             command.append("--open-browser")
         return subprocess.call(command, cwd=ROOT)
@@ -111,7 +114,7 @@ def main(argv=None):
         return 0
     except (OSError, ValueError, RuntimeError, subprocess.CalledProcessError) as error:
         print(f"Não foi possível iniciar: {error}", file=sys.stderr)
-        print("Confira o Python 3.11 e a conexão com a internet e execute novamente.", file=sys.stderr)
+        print("Confira o Python 3.11+ e a conexão com a internet e execute novamente.", file=sys.stderr)
         return 1
 
 

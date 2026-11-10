@@ -11,10 +11,10 @@ from pathlib import Path
 
 if __package__:
     from .common import BASE_MODEL, ROOT, read_jsonl
-    from .inference import select_device
+    from .inference import DEVICE_CHOICES, model_load_options, select_device
 else:
     from common import BASE_MODEL, ROOT, read_jsonl
-    from inference import select_device
+    from inference import DEVICE_CHOICES, model_load_options, select_device
 
 PRESETS = {
     "experiment-1": {"learning_rate": 5e-5, "batch_size": 2, "epochs": 5},
@@ -103,7 +103,7 @@ def train(args):
     collate = partial(collate_batch, pad_token_id=tokenizer.pad_token_id)
     train_loader = DataLoader(train_dataset, batch_size=preset["batch_size"], shuffle=True, collate_fn=collate)
     val_loader = DataLoader(val_dataset, batch_size=preset["batch_size"], shuffle=False, collate_fn=collate)
-    model = AutoModelForCausalLM.from_pretrained(args.model, token=False).to(device)
+    model = AutoModelForCausalLM.from_pretrained(args.model, token=False, **model_load_options(device)).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=preset["learning_rate"])
     metadata = {
         "model": args.model, "experiment": args.experiment, **preset,
@@ -167,7 +167,7 @@ def main(argv=None):
     parser.add_argument("--epochs", type=int)
     parser.add_argument("--max-length", type=int, default=256)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--device", choices=["auto", "cpu", "cuda"], default="auto")
+    parser.add_argument("--device", choices=DEVICE_CHOICES, default="auto")
     parser.add_argument("--max-steps", type=int, help="Smoke run only; not a complete experiment.")
     args = parser.parse_args(argv)
     try:

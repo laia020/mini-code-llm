@@ -4,10 +4,10 @@ import argparse
 
 if __package__:
     from .common import build_prompt
-    from .inference import CodeGenerator, select_device
+    from .inference import CodeGenerator, DEVICE_CHOICES, select_device
 else:
     from common import build_prompt
-    from inference import CodeGenerator, select_device
+    from inference import CodeGenerator, DEVICE_CHOICES, select_device
 
 EXAMPLES = [
     "Create a Python function called add_numbers(a, b) that returns their sum.",
@@ -82,7 +82,7 @@ def create_app(generator=None):
             generate_button = gr.Button("Generate", variant="primary")
             clear_button = gr.Button("Clear")
         output = gr.Code(label="Código Python", language="python", interactive=False)
-        status = gr.Markdown(f"Dispositivo detectado: {select_device()} · Modelo carregado na primeira geração.")
+        status = gr.Markdown(f"Dispositivo detectado: {select_device(generator.requested_device)} · Modelo carregado na primeira geração.")
         generate_button.click(respond, instruction, [output, status], api_name="generate", concurrency_id="model", concurrency_limit=1)
         clear_button.click(clear, outputs=[instruction, output, status], api_name="clear", queue=False)
         instruction.submit(respond, instruction, [output, status], concurrency_id="model", concurrency_limit=1)
@@ -94,8 +94,9 @@ def main(argv=None):
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=7860)
     parser.add_argument("--open-browser", action="store_true", help="Abre o frontend no navegador.")
+    parser.add_argument("--device", choices=DEVICE_CHOICES, default="auto")
     args = parser.parse_args(argv)
-    create_app().launch(server_name=args.host, server_port=args.port, share=False, inbrowser=args.open_browser)
+    create_app(CodeGenerator(device=args.device)).launch(server_name=args.host, server_port=args.port, share=False, inbrowser=args.open_browser)
 
 
 if __name__ == "__main__":

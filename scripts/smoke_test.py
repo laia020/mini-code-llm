@@ -16,10 +16,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from src.common import MODEL_ID, MODEL_REVISION, build_prompt, check_new_outputs, read_jsonl, write_json
 from src.evaluate import evaluate_records
-from src.inference import CodeGenerator
+from src.inference import CodeGenerator, DEVICE_CHOICES, select_device
 
 
-def run(output, skip_training=False):
+def run(output, skip_training=False, device="auto"):
+    device = select_device(device)
     check_new_outputs(output)
     os.environ.setdefault("GRADIO_ANALYTICS_ENABLED", "False")
     import torch
@@ -27,7 +28,7 @@ def run(output, skip_training=False):
     torch.set_num_threads(min(4, os.cpu_count() or 1))
     from src.app import create_app
     from gradio_client import Client
-    generator = CodeGenerator(device="cpu")
+    generator = CodeGenerator(device=device)
     contracts = {c["family"]: c for c in json.loads((ROOT / "contracts/families.json").read_text(encoding="utf-8"))["families"]}
     prompts = {
         "add_numbers": "Create a Python function called add_numbers(a, b) that returns their sum.",
@@ -46,10 +47,12 @@ def run(output, skip_training=False):
         "status": "PASS", "platform": platform.system(), "python": platform.python_version(),
         "versions": {name: importlib.metadata.version(name) for name in ["torch", "transformers", "gradio", "huggingface_hub"]},
         "model": MODEL_ID, "revision": MODEL_REVISION, "subfolder": "experiment-3",
-        "anonymous_hub_access": True, "cpu_inference": "PASS", "cuda_available": torch.cuda.is_available(),
+        "anonymous_hub_access": True, "device": device, "inference": "PASS", "mps_available": torch.backends.mps.is_available(), "cuda_available": torch.cuda.is_available(),
+        "cpu_inference": "PASS" if device == "cpu" else "NOT_TESTED",
+        "mps_inference": "PASS" if device == "mps" else "NOT_TESTED",
         "smoke_examples": evaluated, "smoke_summary": summary,
     }
-    if torch.cuda.is_available():
+    if torch.cuda.is_available() and device != "cuda":
         cuda_generator = CodeGenerator(device="cuda")
         cuda_records = []
         for record in records:
@@ -59,7 +62,7 @@ def run(output, skip_training=False):
         report["cuda_inference"] = "PASS"
         del cuda_generator
     else:
-        report["cuda_inference"] = "NOT_AVAILABLE"
+        report["cuda_inference"] = "PASS" if device == "cuda" else "NOT_AVAILABLE"
 
     with socket.socket() as connection:
         connection.bind(("127.0.0.1", 0))
@@ -99,11 +102,11 @@ def run(output, skip_training=False):
                 output_dir=root / "checkpoint", experiment="experiment-3", model=local_model,
                 train_file=root / "train.jsonl", validation_file=root / "validation.jsonl",
                 learning_rate=None, batch_size=2, epochs=1, max_length=256,
-                seed=42, device="cpu", max_steps=1,
+                seed=42, device=device, max_steps=1,
             ))
             assert (root / "checkpoint/model.safetensors").is_file()
             # Reload what the training loop saved, including its tokenizer.
-            reloaded = CodeGenerator(str(root / "checkpoint"), device="cpu").load()
+            reloaded = CodeGenerator(str(root / "checkpoint"), device=device).load()
             assert reloaded.generate(prompts["add_numbers"])
             report["training_smoke"] = {
                 "status": "PASS", "optimizer_steps": 1, "checkpoint_reload": "PASS",
@@ -122,8 +125,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--skip-training", action="store_true")
+    parser.add_argument("--device", choices=DEVICE_CHOICES, default="auto")
     args = parser.parse_args()
-    run(args.output, args.skip_training)
+    run(args.output, args.skip_training, args.device)
 
 
 if __name__ == "__main__":

@@ -77,5 +77,24 @@ class LauncherTests(unittest.TestCase):
         self.assertEqual(call.call_args.args[0][-1], "7890")
 
 
+class AppleLauncherTests(unittest.TestCase):
+    def test_existing_python312_environment_is_reused(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            python = iniciar.environment_python(root / '.venv')
+            python.parent.mkdir(parents=True)
+            python.touch()
+            with patch.object(iniciar.subprocess, 'check_output', return_value='3.12\n'), patch.object(iniciar.venv.EnvBuilder, 'create') as create:
+                self.assertEqual(iniciar.ensure_environment(root), python)
+            create.assert_not_called()
+
+    def test_uv_environment_can_skip_setup_and_forward_device(self):
+        with patch.object(iniciar, 'ensure_environment', return_value=Path(sys.executable)), patch.object(iniciar, 'ensure_dependencies') as setup, patch.object(iniciar.subprocess, 'call', return_value=0) as call:
+            self.assertEqual(iniciar.main(['--skip-setup', '--device', 'mps', '--no-browser']), 0)
+        setup.assert_not_called()
+        command = call.call_args.args[0]
+        self.assertEqual(command[command.index('--device') + 1], 'mps')
+
+
 if __name__ == "__main__":
     unittest.main()

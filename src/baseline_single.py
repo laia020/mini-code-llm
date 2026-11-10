@@ -1,6 +1,17 @@
 """Educational demonstration; run explicitly from the project root."""
 
-def main():
+import argparse
+
+if __package__:
+    from .inference import DEVICE_CHOICES, model_load_options, select_device
+else:
+    from inference import DEVICE_CHOICES, model_load_options, select_device
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--device", choices=DEVICE_CHOICES, default="auto")
+    args = parser.parse_args(argv)
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -8,7 +19,7 @@ def main():
     MODEL_NAME = "HuggingFaceTB/SmolLM2-135M"
 
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = select_device(args.device)
 
     print(f"Device: {device}")
 
@@ -17,7 +28,7 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
     print("Loading model...")
-    model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
+    model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, **model_load_options(device))
 
     model = model.to(device)
     model.eval()

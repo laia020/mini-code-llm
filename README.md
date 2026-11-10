@@ -6,11 +6,26 @@ O benchmark cobre **12 famílias de tarefas**. Em validation, a correção funci
 
 [Como usar](#como-usar) · [Modelos no Hugging Face](https://huggingface.co/laia020/mini-code-llm) · [Resultados](#resultados) · [Metodologia e reprodução](docs/reproduction.md) · [Contexto acadêmico](docs/academic-context.md)
 
+## Requisitos
+
+O inicializador aceita **Python 3.11 ou superior**. O ambiente Apple Silicon validado usa Python **3.12.16**, PyTorch **2.15.0** e Python nativo ARM64. Outras versões aceitas pelo inicializador dependem da disponibilidade de wheels compatíveis das bibliotecas; não foram todas testadas.
+
+As dependências diretas estão em [`requirements.txt`](requirements.txt):
+
+| Dependência | Requisito | Uso |
+|---|---|---|
+| PyTorch | `torch>=2.5` | Tensores, inferência e treinamento |
+| Transformers | `transformers==5.19.0` | Modelo e tokenizer |
+| Gradio | `gradio>=5,<6` | Interface local |
+| Hugging Face Hub | `huggingface_hub>=1,<2` | Acesso aos checkpoints |
+
+O **uv** é usado para gerenciar o ambiente manualmente. **pytest** é uma dependência opcional de desenvolvimento; a suíte também pode ser executada com `unittest`. Não há lockfile: os requisitos acima não fixam todas as versões transitivas.
+
 ## Como usar
 
 ### Windows
 
-1. Tenha **Python 3.11** instalado.
+1. Tenha **Python 3.11 ou superior** instalado.
 2. [Baixe o projeto](https://github.com/laia020/mini-code-llm/archive/refs/heads/main.zip) e extraia o ZIP.
 3. Dê dois cliques em **[`iniciar.bat`](iniciar.bat)**.
 
@@ -18,17 +33,122 @@ O inicializador prepara a `.venv`, instala as dependências e abre o aplicativo 
 
 ### Linux/macOS
 
-Com Python 3.11 instalado, execute na pasta do projeto:
+Com Python 3.11 ou superior instalado, execute na pasta do projeto:
 
 ```bash
-python3.11 iniciar.py
+python3 iniciar.py
 ```
 
 A instalação inicial requer internet. O modelo é baixado do Hugging Face no primeiro **Generate** e fica em cache. Nas próximas execuções, o ambiente preparado é reutilizado. Se os requisitos ou as versões instaladas mudarem, o inicializador confere e ajusta as dependências dentro da `.venv`.
 
-Novos ambientes Windows/Linux usam PyTorch CPU, suficiente para a demonstração. Uma instalação PyTorch CUDA existente e compatível é preservada. A inferência seleciona CUDA quando disponível e CPU caso contrário.
+Novos ambientes Windows/Linux usam PyTorch CPU, suficiente para a demonstração. Uma instalação PyTorch CUDA existente e compatível é preservada. Treinamento e inferência selecionam CUDA → MPS → CPU. Também é possível escolher explicitamente `--device cuda`, `--device mps` ou `--device cpu`.
+
+### Apple Silicon com ambiente existente (uv)
+
+Reutilize sua `.venv`, sem reinstalar dependências:
+
+```bash
+source .venv/bin/activate
+python iniciar.py --skip-setup --device mps
+```
+
+`--skip-setup` evita instalações, atualizações e gravação do marcador de setup. Sem essa opção, o inicializador mantém seu fluxo de preparação com pip. A interface e as CLIs usam `auto` por padrão. Veja [instruções e limitações do MPS](docs/reproduction.md#apple-silicon-mps).
 
 Problemas com Python, porta ocupada ou download? Consulte [solução de problemas](docs/reproduction.md#problemas-comuns-na-inicialização).
+
+### Instalação manual com uv — Windows, Linux e macOS
+
+Em um clone novo, com uv e Python 3.12 instalados, crie o ambiente **somente se `.venv` ainda não existir**:
+
+```bash
+uv venv --python 3.12 --prompt venv-mini-code-llm .venv
+```
+
+A pasta permanece `.venv`; o padrão de identificação no terminal é **`(venv-nome-do-projeto)`**, neste projeto **`(venv-mini-code-llm)`**. O nome exibido não altera os caminhos usados pelo inicializador. Para ambientes existentes, pule a criação e preserve a configuração atual.
+
+Ative no Windows (PowerShell):
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Ou no Linux/macOS (bash/zsh):
+
+```bash
+source .venv/bin/activate
+```
+
+Em um ambiente novo ou com dependências ainda ausentes, instale os requisitos. Em um ambiente já configurado, execute apenas a verificação:
+
+```bash
+uv pip install -r requirements.txt
+uv pip check
+python iniciar.py --skip-setup
+```
+
+Para NVIDIA no Windows/Linux, instale primeiro o PyTorch CUDA compatível com seu driver conforme o [seletor oficial do PyTorch](https://pytorch.org/get-started/locally/), e depois as demais dependências. No macOS Apple Silicon, a distribuição macOS do PyTorch oferece o backend MPS; CUDA não se aplica. O modo manual com uv deve usar `--skip-setup`, pois o fluxo automático do inicializador usa pip, que pode não estar instalado em ambientes criados com uv.
+
+## Dispositivos e execução
+
+Execute os comandos a partir da raiz, com a `.venv` ativa. O modo padrão `--device auto` escolhe **CUDA → MPS → CPU**. Uma escolha explícita indisponível gera erro, sem trocar silenciosamente para CPU.
+
+| Dispositivo | Ambiente | Opção |
+|---|---|---|
+| CPU | Windows, Linux e macOS | `--device cpu` |
+| CUDA | NVIDIA com PyTorch CUDA e driver compatível | `--device cuda` |
+| MPS | macOS com GPU Metal compatível, incluindo Apple Silicon | `--device mps` |
+
+Confira a seleção sem carregar pesos:
+
+```bash
+python -c "from src.inference import select_device; print(select_device())"
+```
+
+Inferência de uma instrução e geração em lote para validation:
+
+```bash
+python src/inference.py "Create is_even(number) that checks parity." --device auto
+python src/generate.py --input data/validation.jsonl --output results/reproductions/validation-new.jsonl --device auto
+```
+
+Esses comandos usam o experimento 3 publicado e podem baixar pesos se ainda não estiverem em cache. Para usar apenas um checkpoint local, informe `--model /caminho/do/checkpoint` e defina `HF_HUB_OFFLINE=1` antes de iniciar o Python. `src/app.py`, `src/train.py`, `src/generate.py`, `src/inference.py`, `src/baseline_single.py`, `src/inspect_loss.py` e `scripts/smoke_test.py` aceitam a opção de dispositivo; o inicializador a encaminha à interface.
+
+O comando de treinamento completo abaixo é uma instrução de uso, **não foi executado na adaptação ou na revisão para publicação**:
+
+```bash
+python src/train.py --experiment experiment-3 --output-dir models/experiment-3-new --device auto
+```
+
+O treinamento ajusta todos os pesos e pode demandar bastante tempo e memória. Aceita um checkpoint local com `--model` e uma execução limitada com `--max-steps 1`; mesmo nesse caso, a validation inteira é processada. Os presets dos três experimentos estão preservados.
+
+A avaliação usa as respostas brutas salvas e executa os mesmos contratos em CPU, sem carregar um LLM nem receber `--device`:
+
+```bash
+python src/evaluate.py --input results/reproductions/validation-new.jsonl --output results/reproductions/validation-evaluated-new.jsonl --summary results/reproductions/validation-summary-new.json
+```
+
+Escolha caminhos novos para cada execução. Não substitua os dados, as gerações ou os resumos históricos. O test set continua reservado ao protocolo final, sem participar de ajustes ou seleção.
+
+## Testes automatizados
+
+Com pytest já instalado na `.venv`, execute:
+
+```bash
+python -m pytest tests/ -v
+```
+
+Se estiver preparando um ambiente de desenvolvimento novo, `uv pip install pytest` instala a ferramenta opcional. Para impedir acesso ao Hub durante os testes, configure antes `HF_HUB_OFFLINE=1` (`export HF_HUB_OFFLINE=1` em bash/zsh; `$env:HF_HUB_OFFLINE="1"` em PowerShell). Os testes criam o modelo e o tokenizer localmente, sem downloads de pesos.
+
+Alternativa sem pytest e verificações complementares:
+
+```bash
+python -m unittest discover -s tests -v
+uv pip check
+python scripts/validate_dataset.py
+python scripts/verify_repository.py
+python src/train.py --help
+python src/inference.py --help
+```
 
 ## Exemplo de uso
 
@@ -152,13 +272,25 @@ Baseline, os três treinamentos, validações e teste final foram executados na 
 
 O [log de treinamento preservado](results/experiment_3_train.log) registra execução em CUDA. A demonstração local também foi verificada em CPU, incluindo inferência real e interface Gradio. Os registros dessas checagens estão em [docs/verification.json](docs/verification.json).
 
+## Validação e limites no Apple Silicon
+
+A adaptação foi validada no Mac com testes automatizados de seleção de dispositivo e um **Llama minúsculo de pesos aleatórios criado localmente**. Em CPU e MPS, a suíte verifica forward/backward, um passo de AdamW, validation loss finita, alteração dos pesos, gravação em safetensors, recarga e geração. O teste MPS é pulado quando o processo não tem acesso à GPU.
+
+**O modelo SmolLM2-135M e os checkpoints publicados ainda não foram validados em MPS nesta adaptação. Nenhum fine-tuning completo foi executado no MacBook.** Os resultados dos três experimentos e a verificação real anterior em CPU pertencem ao ambiente histórico descrito acima. A revisão para publicação não repetiu inferência desses checkpoints nem baixou pesos.
+
+CUDA e os caminhos Windows/Linux foram preservados e cobertos por testes de seleção e regressão com simulação quando necessário. Não houve nova execução nativa em Windows/Linux ou em GPU NVIDIA nesta revisão.
+
+No MPS, o carregamento usa FP32 explicitamente; IDs, labels e máscaras mantêm `torch.long`. A GPU compartilha memória com o sistema, não suporta FP64 e pode ter operações indisponíveis. Se faltar memória, reduza o batch; o código rejeita sequências acima de `--max-length` em vez de truncá-las. Desempenho superior à CPU e igualdade numérica entre backends não são garantidos.
+
+Para uma operação sem implementação MPS, o fallback opcional `PYTORCH_ENABLE_MPS_FALLBACK=1`, definido antes de iniciar o Python, pode executar a operação em CPU, com custo de desempenho; não corrige tipos incompatíveis. A alternativa é `--device cpu`. Veja os detalhes em [Apple Silicon (MPS)](docs/reproduction.md#apple-silicon-mps).
+
 ## Metodologia e reprodução
 
 O treinamento usa comprimento máximo 256, AdamW e gradient clipping de norma 1,0. Os tokens do prompt recebem labels `-100`, mantendo a instrução como contexto e concentrando a loss no código e no EOS. Padding também é mascarado. O checkpoint é selecionado pela menor validation loss.
 
 O [guia de metodologia e reprodução](docs/reproduction.md) detalha tokenização, logits, geração autoregressiva, labels, loss e batches, além dos comandos para treinamento, inferência, avaliação, auditoria e testes. As novas execuções registram seed, configuração, versões e hashes dos dados e recusam sobrescrever saídas existentes.
 
-Os hashes dos dados e dos resultados originais permitem verificar sua integridade. A auditoria reavalia respostas salvas, sem gerar novamente o test set. A suíte tem **39 testes unitários e de regressão**; o inicializador também foi verificado em uma cópia sem `.venv`, com caminho contendo espaços e inicialização HTTP real do Gradio.
+Os hashes dos dados e dos resultados originais permitem verificar sua integridade. A auditoria reavalia respostas salvas, sem gerar novamente o test set. A suíte inclui testes unitários e de regressão; o inicializador também foi verificado em uma cópia sem `.venv`, com caminho contendo espaços e inicialização HTTP real do Gradio.
 
 ## Limitações e próximos passos
 
@@ -178,7 +310,7 @@ data/               train, validation, test e manifest de integridade
 results/            gerações e métricas dos experimentos
 src/                frontend, inferência, geração, treinamento e avaliação
 scripts/            construção, validação, auditoria e smoke tests
-tests/              testes do pipeline e do inicializador
+tests/              testes do pipeline, dispositivos e inicializador
 docs/               metodologia, evidências e contexto acadêmico
 iniciar.bat         inicializador Windows
 iniciar.py          preparação do ambiente e abertura do frontend

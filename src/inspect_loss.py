@@ -1,6 +1,17 @@
 """Educational demonstration; run explicitly from the project root."""
 
-def main():
+import argparse
+
+if __package__:
+    from .inference import DEVICE_CHOICES, model_load_options, select_device
+else:
+    from inference import DEVICE_CHOICES, model_load_options, select_device
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--device", choices=DEVICE_CHOICES, default="auto")
+    args = parser.parse_args(argv)
     import json
     from pathlib import Path
 
@@ -15,7 +26,7 @@ def main():
     MAX_LENGTH = 256
 
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = select_device(args.device)
 
     print(f"Device: {device}")
 
@@ -33,7 +44,7 @@ def main():
 
 
     model = AutoModelForCausalLM.from_pretrained(
-        MODEL_NAME
+        MODEL_NAME, **model_load_options(device)
     )
 
     model = model.to(device)

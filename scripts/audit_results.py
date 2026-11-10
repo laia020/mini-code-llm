@@ -4,7 +4,7 @@ import argparse
 import hashlib
 import json
 import math
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,6 +32,11 @@ def verify_hashes():
     return len(manifest["artifacts"])
 
 
+def historical_input_path(name):
+    """Read Windows or POSIX paths without rewriting historical metadata."""
+    return ROOT / PureWindowsPath(name).as_posix()
+
+
 def audit(output_dir):
     check_new_outputs(output_dir)
     preserved = verify_hashes()
@@ -39,7 +44,7 @@ def audit(output_dir):
     reports = []
     for path in sorted((ROOT / "results").glob("*_summary.json")):
         expected = json.loads(path.read_text(encoding="utf-8"))
-        input_path = ROOT / expected["input_file"]
+        input_path = historical_input_path(expected["input_file"])
         evaluated, actual = evaluate_records(read_jsonl(input_path), contracts, expected["input_file"])
         compare(actual, expected)
         historical_details = read_jsonl(input_path.with_name(input_path.stem + "_evaluated.jsonl"))
